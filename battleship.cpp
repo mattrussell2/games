@@ -66,12 +66,10 @@ bool battleship::gameover() const{
   int usr_count = 0;
   for (int i=0;i<10;i++){    
     for (int j=0;j<10;j++){
-      if (pc_try_board->at(i).at(j)=="*" || pc_try_board->at(i).at(j)=="_") pc_count++;
-      if (hu_try_board->at(i).at(j)=="*" || hu_try_board->at(i).at(j)=="_") usr_count++;
+      if (pc_try_board->at(i).at(j)!="*" || pc_try_board->at(i).at(j)!="_") pc_count++;
+      if (hu_try_board->at(i).at(j)!="*" || hu_try_board->at(i).at(j)!="_") usr_count++;
     }
   }
-  int pc_hits = 100 - pc_count;
-  int usr_hits = 100 - usr_count;
   if (pc_hits==44 || usr_hits==44) return true;
   else return false;
 }
