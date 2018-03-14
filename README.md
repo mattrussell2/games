@@ -8,6 +8,9 @@
 
 welcome to battleship!
 
+make battleship using 'make'
+run battleship: ./battleship
+
 in order to play, simply follow the onscreen directions.
 
 currently, only the 'stupid pc' is implemented (i.e. computer makes random guesses every time). 
