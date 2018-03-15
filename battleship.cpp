@@ -2,11 +2,9 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include "rlutil.h"
 
 using namespace std;
 battleship::battleship(){
-  rlutil::setColor(3);
   cout << R"(
              ___.              __     __   .__                   .__     .__         
 	     \_ |__  _____   _/  |_ _/  |_ |  |    ____    ______|  |__  |__|______
@@ -24,7 +22,6 @@ battleship::battleship(){
   cout << "Let\'s play! You have the option to place the ships on the board, or have " << endl;
   cout << "me do it for you (don\'t worry, I won\'t peek!)" << endl;
 
-  rlutil::setColor(0);
   pc_try_board = new board();    hu_try_board = new board();
   pc_own_board = new board();    hu_own_board = new board();
 
@@ -41,6 +38,7 @@ battleship::battleship(){
     cout << "Enter y or n"; 
     getline(cin,s);
   }    
+  cout << endl;
   if (s=="y") {
     human_generate_ships(hu_own_board,hu_ships);
   } else{
@@ -48,6 +46,7 @@ battleship::battleship(){
   }
   generate_ships(pc_own_board,pc_ships);  
   print_user_game_data();
+  cout << endl;
 }
 
 void battleship::init_board(board *&board){
@@ -70,7 +69,7 @@ bool battleship::gameover() const{
       if (hu_try_board->at(i).at(j)!="*" || hu_try_board->at(i).at(j)!="_") usr_count++;
     }
   }
-  if (pc_hits==44 || usr_hits==44) return true;
+  if (pc_count==44 || usr_count==44) return true;
   else return false;
 }
 
@@ -92,7 +91,7 @@ void battleship::add_hit_to_ships(board *&b,vector<ship> *&ships,int x, int y){
 	
 	string sunk_string = "\033[1;31m" + s.get_name().substr(0,1) + "\033[0m";
 	//replace the ship on the try board with the char of the ship
-	place_ship(b,s.get_length(), s.get_x(), s.get_y(), s.get_dir(),sunk_string);
+	place_ship(b,s.get_length(), s.get_x(), s.get_y(), s.get_dir(),sunk_string); 
 	return;
       }
     }    
@@ -101,7 +100,7 @@ void battleship::add_hit_to_ships(board *&b,vector<ship> *&ships,int x, int y){
 
 void battleship::register_hit(board *&hit_board,board *&firing_board,int x, int y){//,bool n){
   hit_board->at(y).at(x) = "\033[1;31mX\033[0m";
-  firing_board->at(y).at(x) = "\033[1;31mX\033[0m";
+  firing_board->at(y).at(x) = "\033[1;31mX\033[0m"; 
 }
 
 void battleship::register_miss(board *&missed_board,board *&firing_board,int x, int y){//, bool n){
@@ -119,7 +118,6 @@ void battleship::make_guess(){
   if (input.length()>2){
     x = ((int)input[1]-48)*10+(int)input[2]-48;
   }else x = (int)input[1]-48;
-  cout << "X: " << x;
   x--; //convert from 'human readable' to 'machine format'
   
   if (x>9 || y > 9 || x < 0 || y < 0) { 
@@ -134,12 +132,12 @@ void battleship::make_guess(){
       if (pc_own_board->at(y).at(x)=="\033[1;34m_\033[0m"){
 	cout << "already missed here!" << endl;	
       }else{ 
-	cout << "\033[1;32m hit!\033[0m" << endl;
+	cout << "\033[1;31m hit!\033[0m" << endl;
 	register_hit(pc_own_board,hu_try_board,x,y); 
 	add_hit_to_ships(hu_try_board,pc_ships,x,y);           
       }
     }else {
-      cout << "\033[1;31m miss!\033[0m" << endl;
+      cout << "\033[1;34m miss!\033[0m" << endl;
       register_miss(pc_own_board,hu_try_board,x,y); 
     }
   }
@@ -183,13 +181,14 @@ void battleship::pc_make_guess(){
   //cout << "Time for me to Fire!"<< endl;
   cout << "PC is guessing x: " << x+1  << " and y: " << y+1 << " ";
   if (hu_own_board->at(y).at(x)!="*") {
-    cout << "\033[1;32m hit!\033[0m" << endl;
+    cout << "\033[1;31m hit!\033[0m" << endl;
     register_hit(hu_own_board,pc_try_board,x,y); 
     add_hit_to_ships(hu_own_board,hu_ships,x,y); //show the user that their ships are hit
   }else {
-    cout << "\033[1;31m miss!\033[0m" << endl;
+    cout << "\033[1;34m miss!\033[0m" << endl;
     register_miss(hu_own_board,pc_try_board,x,y);
   }
+  cout << endl;
 }
 
 //continue allowing the user to guess until one player wins
