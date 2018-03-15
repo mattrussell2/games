@@ -16,13 +16,8 @@ battleship::battleship(){
 	    )" << endl;
 
   cout << "Welcome to battleship!" << endl;
-  cout << "You will be able to see your attempts board, and your board of ships." << endl;
-  cout << "You and I will take turns firing at each other's board. There will " << endl;
-  cout << "be a notification of whether each shot hits or misses, and the boards " << endl;
-  cout << "will be updated after each round." << endl;
-  cout << "Pro tip! press the CAPS-LOCK key to make entering board spaces easier ;)\n";
-  cout << "Let's play! You have the option to place the ships on the board, or have " << endl;
-  cout << "me do it for you (don't worry, I won't peek!)" << endl;
+  cout << "You have the option to place the ships on the board, or have " << endl;
+  cout << "me do it for you." << endl;
 
   pc_try_board = new board();    hu_try_board = new board();
   pc_own_board = new board();    hu_own_board = new board();
@@ -34,14 +29,15 @@ battleship::battleship(){
   hu_ships = new vector<ship>();
   
   string s;
-  cout << "Would you like to place the ships on the board yourself (Y/N)? ";
+  cout << "Would you like to place the ships on the board yourself (y/n)? ";
   getline(cin,s);
-  while (s!="y" || s!="n" || s!="Y" || s!="N") { 
-    cout << "Enter Y/N: "; 
+  while (s!="y" && s!="n" && s!="Y" && s!="N") { 
+    cout << "please enter y/n: ";
     getline(cin,s);
   }    
   cout << endl;
 
+  srand(time(NULL));
   if (s=="y" || s=="Y") {
     human_generate_ships(hu_own_board,hu_ships);
   } else{
@@ -49,10 +45,10 @@ battleship::battleship(){
   }
   generate_ships(pc_own_board,pc_ships);  
 
-  cout << "Okay! Also, how challenging would you like me to be? (0 for easy, 1 for medium): ";
+  cout << "Okay! Also, how challenging would you like me to be? (0 = easy, 1 = medium): ";
   getline(cin,s);
-  while(s!="0" && s!="1"){
-    cout << "Enter 1 or 0: ";
+ while(s!="0" && s!="1"){
+    cout << "Enter 0 or 1: ";
     getline(cin,s);
   }if (s=="0") difficulty="easy";
   else difficulty="medium";
@@ -120,12 +116,12 @@ void battleship::add_hit_to_ships(board *&b,vector<ship> *&ships,int x, int y, b
   }
 }
 
-void battleship::register_hit(board *&hit_board,board *&firing_board,int x, int y){//,bool n){
+void battleship::register_hit(board *&hit_board,board *&firing_board,int x, int y){
   hit_board->at(y).at(x) = "\033[1;31mX\033[0m";
   firing_board->at(y).at(x) = "\033[1;31mX\033[0m"; 
 }
 
-void battleship::register_miss(board *&missed_board,board *&firing_board,int x, int y){//, bool n){
+void battleship::register_miss(board *&missed_board,board *&firing_board,int x, int y){
   missed_board->at(y).at(x)="\033[1;34m_\033[0m";
   firing_board->at(y).at(x)="\033[1;34m_\033[0m";
 }
@@ -135,10 +131,10 @@ void battleship::hu_make_guess(){
   string input;
   cout << "Enter a coordinates (i.e. A3): ";
   getline(cin,input);
-  y = int(input[0])-65;
+  y = int(toupper(input[0]))-65;
   if (input.length()>2){
-    x = ((int)input[1]-48)*10+(int)input[2]-48;
-  }else x = (int)input[1]-48;
+    x = ((int)(toupper(input[1]))-48)*10+(int)(toupper(input[2]))-48;
+  }else x = (int)(toupper(input[1]))-48;
   x--; //convert from 'human readable' to 'machine format'
   
   if (x>9 || y > 9 || x < 0 || y < 0) { 
@@ -282,7 +278,6 @@ bool battleship::check_clear_area(board *board,int len, int x, int y, int d) con
 //returns when it finds a valid placement position for the given ship
 void battleship::find_valid_start_loc(board *board, int len, int &x, int &y, bool &d) const{  
   while (true){
-    srand(time(NULL));
     x = (rand() % 10);
     y = (rand() % 10);
     d = rand() % 2; //0 or 1, indicating direction  
@@ -396,7 +391,7 @@ void battleship::generate_ships(board *&b,vector<ship> *&ships){
     ship_name = ship_name_lookup[i];
     int num_ships = i+1;
     for (int j=0;j<num_ships;j++){     
-      find_valid_start_loc(b,len,x,y,d);      
+      find_valid_start_loc(b,len,x,y,d);     
       place_ship(b,len,x,y,d,string(1,ship_name.at(0)));
       s = ship(ship_name,ship_class,x,y,len,d);
       s.set_hits();
@@ -421,6 +416,8 @@ string green_char(int i){
 }
 
 void battleship::print_board(board *b) const{
+  cout << "   Your board" << endl;
+  cout << "   \033[1;32m12345678910\033[0m" << endl;
   print_digits();
   for (int i=0;i<10;i++){
     cout << " " << char(65+i) << " ";

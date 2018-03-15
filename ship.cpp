@@ -5,6 +5,7 @@ ship::~ship(){
 }
 
 ship::ship(){
+  name="";
   c=' ';
   start_x = -1; 
   start_y = -1;
@@ -29,12 +30,12 @@ ship::ship(string n,char ch, int x, int y, int l, bool d){
 
 bool ship::within_ship(int x, int y) const{
   if (dir==0){
-    if ((start_y==y) && (x >= start_x) && (x <= start_x+length)){
+    if ((start_y==y) && (x >= start_x) && (x < start_x+length)){
       return true;
     }    
   }
   else {
-    if ((start_x==x) && (y >= start_y) && (y <= start_y+length)){
+    if ((start_x==x) && (y >= start_y) && (y < start_y+length)){
       return true;
     }
   }
