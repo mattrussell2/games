@@ -13,7 +13,7 @@ run battleship: ./battleship
 
 in order to play, simply follow the onscreen directions.
 
-currently, only the 'stupid pc' is implemented (i.e. computer makes random guesses every time). 
+currently easy and medium AI functionality are both implemented. 
 fuller AI functionality to come soon. 
 
 :)
