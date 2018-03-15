@@ -18,28 +18,32 @@ class battleship{
  private: 
   void init_board(board *&board);
   
-  bool search_for_hit_ships(int &x, int &y);
-  void medium_guess(int &x, int &y); //still to be implemented
-  void easy_guess(int &x, int &y);// random guesses
+  bool is_valid_loc(board *b,int x, int y) const;
+  bool blood_in_the_water(board *b,int &x, int &y) const;
+  bool search_for_hit_location(board *b, int &x, int &y) const;
 
-  void get_start_coord(board *b, int len, int &x, int &y, bool &d);
+  void medium_guess(board *b, int &x, int &y) const; //still to be implemented
+  void easy_guess(board *b, int &x, int &y) const;// random guesses
+
+  void get_start_coord(board *b, int len, int &x, int &y, bool &d) const;
   void generate_ships(board *&b,vector<ship> *&ships);
   void human_generate_ships(board *&b,vector<ship> *&ships);
-  void find_valid_start_loc(board *b,int len, int &x, int &y, bool &d);
-  bool check_clear_area(board *b,int len, int x, int y, int d);
+  void find_valid_start_loc(board *b,int len, int &x, int &y, bool &d) const;
+  bool check_clear_area(board *b,int len, int x, int y, int d) const;
   void place_ship(board *&b,int len, int x, int y, bool d,string s);
 
-  void register_hit(board *&hit_board,board *&fire_board,int x, int y);//,bool n);
-  void register_miss(board *&missed_board,board *&f_board,int x, int y);//,bool n);
+  void register_hit(board *&hit_board,board *&fire_board,int x, int y);
+  void register_miss(board *&missed_board,board *&f_board,int x, int y);
 
   bool game_ready(board *human_board) const; 
   bool gameover() const;
 
-  void make_guess();
+  //these two functions make the guesses and call register hits/miss fns.
+  void hu_make_guess();
   void pc_make_guess();
 
   //first board is the TRY board that we will add the letters to if a ship is sunk
-  void add_hit_to_ships(board *&b,vector<ship> *&ships, int x, int y);
+  void add_hit_to_ships(board *&b,vector<ship> *&ships, int x, int y, bool disp);
   
   //searches through the ships to find which one is sunk
   void check_sunken_ships(board *&hit_board,vector<ship>*ships) const;
@@ -58,8 +62,9 @@ class battleship{
   char ship_class_lookup[5] = {'A','B','C','S','D'};
   string ship_name_lookup[5] = {"Aircraft Carrier", "Battleship", "Crusier",
 				"Submarine","Destroyer"};
-
   vector<ship> *pc_ships;
   vector<ship> *hu_ships;
+  
+  string difficulty;
 
 };
