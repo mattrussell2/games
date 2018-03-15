@@ -80,8 +80,16 @@ bool battleship::gameover() const{
       if (hu_try_board->at(i).at(j)!="*" && hu_try_board->at(i).at(j)!="\033[1;34m_\033[0m" && hu_try_board->at(i).at(j) !="\033[1;31mX\033[0m") usr_count++;
     }
   }
-  if (pc_count==44){ cout <<"I WIN. BWAHAHAHAHAA!!!!"<<endl; return true;}
-  if (usr_count==44){ cout <<"YOU WIN. NOOOOOOOOOOOO!!!" << endl; return false;}
+  if (pc_count==44){ 
+    cout <<"I WIN. BWAHAHAHAHAA!!!!"<<endl; 
+    print_full_game_data();
+    return true;
+  }
+  if (usr_count==44){ 
+    cout <<"YOU WIN. NOOOOOOOOOOOO!!!" << endl; 
+    print_full_game_data();
+    return true;
+  }
   return false;
 }
 
@@ -122,8 +130,7 @@ void battleship::register_miss(board *&missed_board,board *&firing_board,int x, 
 }
 
 void battleship::hu_make_guess(){
-  int x;
-  int y;
+  int x; int y;
   string input;
   cout << "Enter a coordinates (i.e. A3): ";
   getline(cin,input);
@@ -417,36 +424,31 @@ void battleship::print_board(board *b) const{
     }
     cout << " " << green_char(i) << endl; 
   }    
-  // cout << 10 << " ";
-  // for (int i=0;i<10;i++){
-  //  cout << b->at(9).at(i);
-  // }
-  //  cout << " " << "Z"10 << endl;  
 }
 
-void battleship::print_user_game_data() const{
-  print_header();
+void battleship::print_two_boards(board *b1, board*b2) const{
   print_digits();
   for (int i=0;i<10;i++){
     cout << " " << green_char(i) << " ";
     for (int j=0;j<10;j++){
-      cout << hu_try_board->at(i).at(j);
+      cout << b1->at(i).at(j);
     }
     cout << " " << green_char(i) << "           " << green_char(i) << " ";
     
     for (int j=0;j<10;j++){
-      cout <<  hu_own_board->at(i).at(j);
+      cout <<  b2->at(i).at(j);
     }
     cout << " " << green_char(i) << endl;
-  }    
-  /*cout << 10 << " ";
-  for (int i=0;i<10;i++){
-    cout << hu_try_board->at(9).at(i);
   }
-  cout << " " << 10 << "          ";
+}
 
-  for (int j=0;j<10;j++){
-    cout <<  hu_own_board->at(9).at(j);
-  }  
-  cout << endl;*/
+void battleship::print_user_game_data() const{
+  print_header();
+  print_two_boards(hu_try_board,hu_own_board);
+} 
+
+
+void battleship::print_full_game_data() const{
+  cout << "    MY  SHOTS                MY  SHIPS" << endl;
+  print_two_boards(pc_try_board,pc_own_board);
 } 

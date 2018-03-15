@@ -49,9 +49,9 @@ class battleship{
   void check_sunken_ships(board *&hit_board,vector<ship>*ships) const;
 
   void print_board(board *b) const; 
-  //void print_boards(vector<string> *, vector<string> *) const;
+  void print_two_boards(board *b, board *b2) const;
   void print_user_game_data() const;
-  //void print_cheater_game_data() const;
+  void print_full_game_data() const;
 
   board *pc_own_board;
   board *pc_try_board;
