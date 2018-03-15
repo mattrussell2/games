@@ -20,8 +20,9 @@ battleship::battleship(){
   cout << "You and I will take turns firing at each other's board. There will " << endl;
   cout << "be a notification of whether each shot hits or misses, and the boards " << endl;
   cout << "will be updated after each round." << endl;
-  cout << "Let\'s play! You have the option to place the ships on the board, or have " << endl;
-  cout << "me do it for you (don\'t worry, I won\'t peek!)" << endl;
+  cout << "Pro tip! press the CAPS-LOCK key to make entering board spaces easier ;)\n";
+  cout << "Let's play! You have the option to place the ships on the board, or have " << endl;
+  cout << "me do it for you (don't worry, I won't peek!)" << endl;
 
   pc_try_board = new board();    hu_try_board = new board();
   pc_own_board = new board();    hu_own_board = new board();
@@ -33,15 +34,15 @@ battleship::battleship(){
   hu_ships = new vector<ship>();
   
   string s;
-  cout << "Would you like to place the ships on the board yourself (y/n)? ";
+  cout << "Would you like to place the ships on the board yourself (Y/N)? ";
   getline(cin,s);
-  while (s!="y" && s!="n") { 
-    cout << "Enter y or n: "; 
+  while (s!="y" && s!="n" && s!="Y" && s!="N") { 
+    cout << "Enter Y/N: "; 
     getline(cin,s);
   }    
   cout << endl;
 
-  if (s=="y") {
+  if (s=="y" || s=="Y") {
     human_generate_ships(hu_own_board,hu_ships);
   } else{
     generate_ships(hu_own_board,hu_ships);  
@@ -248,12 +249,15 @@ void battleship::pc_make_guess(){
 
 //continue allowing the user to guess until one player wins
 void battleship::run_game(){ 
+  int turn_counter=0;
   while(!gameover()){
     hu_make_guess();   
     pc_make_guess();    
     print_user_game_data();
     cout << endl;
+    turn_counter++;
   }
+  cout << "The game was finished in " << turn_counter << " turns." << endl;
 }
 
 
@@ -278,6 +282,7 @@ bool battleship::check_clear_area(board *board,int len, int x, int y, int d) con
 //returns when it finds a valid placement position for the given ship
 void battleship::find_valid_start_loc(board *board, int len, int &x, int &y, bool &d) const{  
   while (true){
+    srand(time(NULL));
     x = (rand() % 10);
     y = (rand() % 10);
     d = rand() % 2; //0 or 1, indicating direction  
