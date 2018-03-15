@@ -36,7 +36,7 @@ battleship::battleship(){
   string s;
   cout << "Would you like to place the ships on the board yourself (Y/N)? ";
   getline(cin,s);
-  while (s!="y" && s!="n" && s!="Y" && s!="N") { 
+  while (s!="y" || s!="n" || s!="Y" || s!="N") { 
     cout << "Enter Y/N: "; 
     getline(cin,s);
   }    
