@@ -3,9 +3,13 @@
 #include <fstream>
 #include <iostream>
 #include <time.h>
+#include <math.h>
 
 using namespace std;
-battleship::battleship(){
+
+
+
+void battleship::start_game(){
   cout << R"(
              ___.              __     __   .__                   .__     .__         
 	     \_ |__  _____   _/  |_ _/  |_ |  |    ____    ______|  |__  |__|______
@@ -19,15 +23,6 @@ battleship::battleship(){
   cout << "You have the option to place the ships on the board, or have " << endl;
   cout << "me do it for you." << endl;
 
-  pc_try_board = new board();    hu_try_board = new board();
-  pc_own_board = new board();    hu_own_board = new board();
-
-  init_board(pc_try_board);      init_board(hu_try_board);  
-  init_board(pc_own_board);      init_board(hu_own_board);
-
-  pc_ships = new vector<ship>(); 
-  hu_ships = new vector<ship>();
-  
   string s;
   cout << "Would you like to place the ships on the board yourself (y/n)? ";
   getline(cin,s);
@@ -39,30 +34,58 @@ battleship::battleship(){
 
   srand(time(NULL));
   if (s=="y" || s=="Y") {
-    human_generate_ships(hu_own_board,hu_ships);
+    generate_ships(hu_own_board,hu_ships,true);
   } else{
-    generate_ships(hu_own_board,hu_ships);  
+    generate_ships(hu_own_board,hu_ships,false);  
   }
-  generate_ships(pc_own_board,pc_ships);  
-
-  cout << "Okay! Also, how challenging would you like me to be? (0 = easy, 1 = medium): ";
+  generate_ships(pc_own_board,pc_ships,false);  
+ 
+  cout << "Okay! How difficult would you like me? (0 = easy, 1 = medium, 2 = hard): ";
   getline(cin,s);
- while(s!="0" && s!="1"){
-    cout << "Enter 0 or 1: ";
+  while(s!="0" && s!="1" && s!="2"){
+    cout << "Enter 0 or 1 or 2: ";
     getline(cin,s);
-  }if (s=="0") difficulty="easy";
-  else difficulty="medium";
+  }
+  if (s=="0") difficulty="easy";
+  if (s=="1") difficulty="medium";
+  if (s=="2") difficulty="hard";
   cout << endl;
   print_user_game_data();
   cout << endl;
 }
 
-void battleship::init_board(board *&board){
+battleship::battleship(){
+  pc_pboard = new pboard();      hu_pboard = new pboard();
+
+  pc_try_board = new board();    hu_try_board = new board();
+  pc_own_board = new board();    hu_own_board = new board();
+
+  init_board(pc_try_board);      init_board(hu_try_board);  
+  init_board(pc_own_board);      init_board(hu_own_board);
+  
+  init_pboard(pc_pboard);        init_pboard(hu_pboard);
+
+  pc_ships = new vector<ship>(); 
+  hu_ships = new vector<ship>();
+  
+}
+
+void battleship::init_pboard(pboard *&pb){
+  vector<int> a;
+  for (int i=0;i<10;i++){
+    pb->push_back(a);
+    for (int j=0;j<10;j++){
+      pb->at(i).push_back(0);
+    }
+  }
+}
+
+void battleship::init_board(board *&b){
   vector<string> v;
   for (int i=0;i<10;i++){
-    board->push_back(v);
+    b->push_back(v);
     for (int j=0;j<10;j++){
-      board->at(i).push_back("*");
+      b->at(i).push_back("*");
     }
   }
 } 
@@ -77,12 +100,12 @@ bool battleship::gameover() const{
       if (hu_try_board->at(i).at(j)!="*" && hu_try_board->at(i).at(j)!="\033[1;34m_\033[0m" && hu_try_board->at(i).at(j) !="\033[1;31mX\033[0m") usr_count++;
     }
   }
-  if (pc_count==44){ 
+  if (pc_count==17){ 
     cout <<"I WIN. BWAHAHAHAHAA!!!!"<<endl; 
     print_full_game_data();
     return true;
   }
-  if (usr_count==44){ 
+  if (usr_count==17){ 
     cout <<"YOU WIN. NOOOOOOOOOOOO!!!" << endl; 
     print_full_game_data();
     return true;
@@ -91,7 +114,7 @@ bool battleship::gameover() const{
 }
 
 //adds the hit to the vector of ships; if a ship is sunk, display info
-void battleship::add_hit_to_ships(board *&b,vector<ship> *&ships,int x, int y, bool disp){
+void battleship::add_hit_to_ships(board *&b,vector<ship> *&ships, pboard *&pb,int x, int y, bool disp){
   int q = (int)ships->size();
   for (int i=0;i<q;i++){
     if (ships->at(i).within_ship(x,y)){
@@ -110,20 +133,23 @@ void battleship::add_hit_to_ships(board *&b,vector<ship> *&ships,int x, int y, b
 	string sunk_string = "\033[1;31m" + s.get_name().substr(0,1) + "\033[0m";
 	//replace the ship on the try board with the char of the ship
 	place_ship(b,s.get_length(), s.get_x(), s.get_y(), s.get_dir(),sunk_string); 
+	pb->at(s.get_x()).at(s.get_y())=-2; //sunk probability
 	return;
       }
     }    
   }
 }
 
-void battleship::register_hit(board *&hit_board,board *&firing_board,int x, int y){
+void battleship::register_hit(board *&hit_board,board *&firing_board,pboard *& f_pboard,int x, int y){
   hit_board->at(y).at(x) = "\033[1;31mX\033[0m";
   firing_board->at(y).at(x) = "\033[1;31mX\033[0m"; 
+  f_pboard->at(y).at(x) = -1;
 }
 
-void battleship::register_miss(board *&missed_board,board *&firing_board,int x, int y){
+void battleship::register_miss(board *&missed_board,board *&firing_board, pboard *& f_pboard, int x, int y){
   missed_board->at(y).at(x)="\033[1;34m_\033[0m";
   firing_board->at(y).at(x)="\033[1;34m_\033[0m";
+  f_pboard->at(y).at(x) = -3;
 }
 
 void battleship::hu_make_guess(){
@@ -150,12 +176,12 @@ void battleship::hu_make_guess(){
 	cout << "already missed here!" << endl;	
       }else{ 
 	cout << "\033[1;31m hit!\033[0m" << endl;
-	register_hit(pc_own_board,hu_try_board,x,y); 
-	add_hit_to_ships(hu_try_board,pc_ships,x,y,1);           
+	register_hit(pc_own_board,hu_try_board,hu_pboard,x,y); 
+	add_hit_to_ships(hu_try_board,pc_ships,hu_pboard,x,y,1);           
       }
     }else {
       cout << "\033[1;34m miss!\033[0m" << endl;
-      register_miss(pc_own_board,hu_try_board,x,y); 
+      register_miss(pc_own_board,hu_try_board,hu_pboard,x,y); 
     }
   }
 }
@@ -171,7 +197,6 @@ void battleship::easy_guess(board *b, int &x, int &y) const{
 }
 
 //look for hit ships. if one is found, x,y will be updated accordingly, and return true. 
-//otherwise, set x and y to best guess and return false. 
 bool battleship::search_for_hit_location(board *b, int &x, int &y) const{
   int converted = y*10+x;
   for (int i=0;i<10;i++){
@@ -193,6 +218,7 @@ bool battleship::is_valid_loc(board *b,int x, int y) const{
   else return false;      
 }
 
+
 //pre: a ship has already been hit. 
 //post: x and y are set to a new location to aim for.
 bool battleship::blood_in_the_water(board *b,int &x, int &y) const{
@@ -203,18 +229,12 @@ bool battleship::blood_in_the_water(board *b,int &x, int &y) const{
   return false;//this location may not be viable (another spot on ship is...)
 }
       
-//still to implement
-void battleship::medium_guess(board *b, int &x, int &y) const{
-  x=0;y=0; bool found; 
-  found = search_for_hit_location(b,x,y);
-  if (!found){ //random guess if no hits on the board.
-    easy_guess(b,x,y);
-    return;
-  }
-  //otherwise, loop until finding a good spot to aim for.  
+//finds an okay spot, given that a ship has been hit already
+void battleship::find_medium_good_spot(board *b, int &x, int &y) const{
+  // loop until finding an x to aim around
   bool valid=false;
   while (!valid){
-    found = search_for_hit_location(b,x,y); //now x and y are valid coordinate of hit.    
+    search_for_hit_location(b,x,y); //now x and y are valid coordinate of hit. #no return
     valid = blood_in_the_water(pc_try_board,x,y); //if we can work it, we're done.
     if (!valid){ //have to increment the position for next call to search
       x++;
@@ -225,27 +245,153 @@ void battleship::medium_guess(board *b, int &x, int &y) const{
   }  
 }
 
-void battleship::pc_make_guess(){
-  int x; int y;
-  if (difficulty=="easy") easy_guess(pc_try_board,x,y);
-  if (difficulty=="medium") medium_guess(pc_try_board,x,y); 
+//checks if a given area is clear of ships
+bool battleship::check_nearby_hit(board *board,int len, int x, int y, int d) const{
+ if (d==0){
+    for (int z=x;z<x+len;z++){
+      if (board->at(y).at(z)=="\033[1;31mX\033[0m") return true;
+    }
+  }
+  else if (d==1){
+    for (int z=y;z<y+len;z++){
+      if (board->at(z).at(x)=="\033[1;31mX\033[0m") return true;
+    }
+  }
+  return false;
+}
 
+void battleship::could_hit_ship(board *b,pboard *&pb, int x, int y, int len, bool d) {
+  int modifier;
+  if (d==0){ //horizontal
+    if (x+len-1<=9 && check_clear_area(b,len,x,y,0)){ 
+      if (check_nearby_hit(b,len,x,y,0)) { modifier=50; } else modifier=1;
+      for (int i=0;i<len;i++){
+	pb->at(y).at(x+i)+=modifier;
+      }
+    }
+  }
+  if (d==1){
+    if (y+len-1<=9 && check_clear_area(b,len,x,y,1)) {
+      if (check_nearby_hit(b,len,x,y,1)) {modifier=50;} else { modifier=1;}
+      for (int i=0;i<len;i++){
+	pb->at(y+i).at(x)+=modifier;
+      }
+    }
+  }
+}
+    
+void battleship::calc_probabilities(board *b, pboard *&pb){  
+  delete pb;
+  pb = new pboard();
+  init_pboard(pb);  
+  int len;
+  for (int i=0;i<10;i++){
+    for (int j=0;j<10;j++){ //for each space
+      for (int z=0;z<5;z++){ //for each ship
+	len = ship_len_lookup[z];
+	could_hit_ship(b,pb,j,i,len,0);
+	could_hit_ship(b,pb,j,i,len,1);
+      }
+    }
+  }
+}
+
+void battleship::find_best_guess(board *b, pboard *&pb, int &x, int &y){
+  calc_probabilities(b,pb);
+  int largest_p=0;
+  for (int i=0;i<10;i++){
+    for (int j=0;j<10;j++){
+      if (pb->at(i).at(j)>largest_p && is_valid_loc(b,j,i)){
+	largest_p=pb->at(i).at(j);
+	x=j; y=i;
+      }
+    }
+  }
+}
+
+void battleship::pc_make_guess(){
+  int x; int y; bool found;
+  if (difficulty=="easy") easy_guess(pc_try_board,x,y);
+  if (difficulty=="medium"){
+    x=0;y=0;
+    found = search_for_hit_location(pc_try_board,x,y);
+    if (!found){
+      easy_guess(pc_try_board,x,y);  
+    }else{
+      find_medium_good_spot(pc_try_board,x,y);
+    }
+  }
+  if (difficulty=="hard") find_best_guess(pc_try_board,pc_pboard,x,y);
+  
   cout << "PC guesses: " + string(1,(char)(y+65)) << x+1;
   if (hu_own_board->at(y).at(x)!="*") {
     cout << "\033[1;31m hit!\033[0m" << endl;
-    register_hit(hu_own_board,pc_try_board,x,y); 
-    add_hit_to_ships(hu_own_board,hu_ships,x,y,1); //show hits to user
-    add_hit_to_ships(pc_try_board,hu_ships,x,y,0);
+    register_hit(hu_own_board,pc_try_board,pc_pboard,x,y); 
+    add_hit_to_ships(hu_own_board,hu_ships,pc_pboard,x,y,1); //show hits to user
+    add_hit_to_ships(pc_try_board,hu_ships,pc_pboard,x,y,0);
   }else {
     cout << "\033[1;34m miss!\033[0m" << endl;
-    register_miss(hu_own_board,pc_try_board,x,y);
+    register_miss(hu_own_board,pc_try_board,pc_pboard,x,y);
   }
   cout << endl;
 }
 
+
+void battleship::pc_test(){
+  string diffs[3]={"easy","medium","hard"};
+  int e[10000];
+  int m[10000];
+  int h[10000];
+  int turn_counter;
+  for (int i=0;i<3;i++){
+    cout << "Starting difficulty: " << diffs[i] << endl;
+    for (int j=0;j<10000;j++){
+      difficulty=diffs[i]; //set difficulty
+      pc_pboard = new pboard();      hu_pboard = new pboard();
+      
+      pc_try_board = new board();    hu_try_board = new board();
+      pc_own_board = new board();    hu_own_board = new board();
+      
+      init_board(pc_try_board);      init_board(hu_try_board);  
+      init_board(pc_own_board);      init_board(hu_own_board);
+      
+      init_pboard(pc_pboard);        init_pboard(hu_pboard);
+      
+      pc_ships = new vector<ship>(); 
+      hu_ships = new vector<ship>();
+      
+      generate_ships(hu_own_board,hu_ships,0);  
+      generate_ships(pc_own_board,pc_ships,0);  
+    
+      turn_counter=0;
+      while(!gameover()){
+	pc_make_guess();
+	turn_counter++;
+      }
+      if (i==0) e[j]=turn_counter;
+      if (i==1) m[j]=turn_counter;
+      if (i==2) h[j]=turn_counter;
+    }
+  }
+  int sum;
+  double avg;
+  for (int i=0;i<3;i++){
+    sum=0; 
+    for (int j=0;j<10000;j++){
+      if (i==0) sum+=e[j];
+      if (i==1) sum+=m[j];
+      if (i==2) sum+=h[j];
+    }
+    avg = sum / 10000.0;
+    cout << "For difficulty difficult the average number of turns was: " << avg << endl;
+  }
+}
+  
+
 //continue allowing the user to guess until one player wins
 void battleship::run_game(){ 
   int turn_counter=0;
+  start_game();
   while(!gameover()){
     hu_make_guess();   
     pc_make_guess();    
@@ -262,12 +408,12 @@ bool battleship::check_clear_area(board *board,int len, int x, int y, int d) con
   int count=0;
   if (d==0){
     for (int z=x;z<x+len;z++){
-      if (board->at(y).at(z)=="*") count++;
+      if (board->at(y).at(z)=="*" || board->at(y).at(z)=="\033[1;31mX\033[0m") count++;
     }
   }
   else if (d==1){
     for (int z=y;z<y+len;z++){
-      if (board->at(z).at(x)=="*") count++;
+      if (board->at(z).at(x)=="*" || board->at(z).at(x)=="\033[1;31mX\033[0m") count++;
     }
   }
   if (count==len) return true;
@@ -354,49 +500,22 @@ void battleship::get_start_coord(board *b, int len, int &x, int &y, bool &d) con
   }
 }
 
-//human generates board locations for the given ships
-void battleship::human_generate_ships(board *&b,vector<ship> *&ships){
-  //1 carrier; 2 battleships; 3 cruisers; 4 submarines; 5 destroyers
-  //while (!game_ready(b)){
-  int x; int y;  int len; bool d;
+void battleship::generate_ships(board *&b, vector<ship> *&ships, bool hu_pc){
+  int x; int y; int len; bool d;
   string ship_name; char ship_class; ship s;
   for (int i=0;i<5;i++){
     len = ship_len_lookup[i];
     ship_class = ship_class_lookup[i];
     ship_name = ship_name_lookup[i];
-    cout << "Placing ships of type " << ship_name << " (length: " << len << ")" << endl;
-    int num_ships = i+1;
-    cout << "We will place " << num_ships << " of this type." << endl;
-    for (int j=0;j<num_ships;j++){     
-      cout<< "Placing #" << j+1 << " of type " << ship_name << " (length: " << len << ")\n";
+    if (hu_pc==1){
+      cout << "Placing ships of type " << ship_name << " (length: " << len << ")" << endl;
       print_board(b);
       get_start_coord(b,len,x,y,d);      
-      place_ship(b,len,x,y,d,string(1,ship_name.at(0)));
-      s = ship(ship_name,ship_class,x,y,len,d);
-      s.set_hits();
-      ships->push_back(s);
-    } 
-  }
-}
-
-
-//generate board locations for the given ships
-void battleship::generate_ships(board *&b,vector<ship> *&ships){
-  //1 carrier; 2 battleships; 3 cruisers; 4 submarines; 5 destroyers
-  int x;  int y; int len;  bool d;
-  char ship_class;  string ship_name; ship s;
-  for (int i=0;i<5;i++){
-    len = ship_len_lookup[i];
-    ship_class = ship_class_lookup[i];
-    ship_name = ship_name_lookup[i];
-    int num_ships = i+1;
-    for (int j=0;j<num_ships;j++){     
-      find_valid_start_loc(b,len,x,y,d);     
-      place_ship(b,len,x,y,d,string(1,ship_name.at(0)));
-      s = ship(ship_name,ship_class,x,y,len,d);
-      s.set_hits();
-      ships->push_back(s);
-    }
+    }else find_valid_start_loc(b,len,x,y,d);
+    place_ship(b,len,x,y,d,string(1,ship_name.at(0)));
+    s = ship(ship_name,ship_class,x,y,len,d);
+    s.set_hits();
+    ships->push_back(s);
   }
 }
 
@@ -446,11 +565,13 @@ void battleship::print_two_boards(board *b1, board*b2) const{
 
 void battleship::print_user_game_data() const{
   print_header();
-  print_two_boards(hu_try_board,hu_own_board);
+    print_two_boards(hu_try_board,hu_own_board);
+    // print_two_boards(pc_try_board,hu_own_board);
 } 
 
 
 void battleship::print_full_game_data() const{
   cout << "    MY  SHOTS                MY  SHIPS" << endl;
-  print_two_boards(pc_try_board,pc_own_board);
+  //  print_two_boards(pc_try_board,pc_own_board);
+ print_two_boards(pc_try_board,hu_own_board);
 } 

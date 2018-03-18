@@ -2,5 +2,5 @@
 
 int main(){
   battleship *b = new battleship;
-  b->run_game();
+  b->run_game();//pc_test();
 }
