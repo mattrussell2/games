@@ -537,7 +537,6 @@ string green_char(int i){
 void battleship::print_board(board *b) const{
   cout << "   Your board" << endl;
   cout << "   \033[1;32m12345678910\033[0m" << endl;
-  print_digits();
   for (int i=0;i<10;i++){
     cout << " " << char(65+i) << " ";
     for (int j=0;j<10;j++){
@@ -566,12 +565,10 @@ void battleship::print_two_boards(board *b1, board*b2) const{
 void battleship::print_user_game_data() const{
   print_header();
     print_two_boards(hu_try_board,hu_own_board);
-    // print_two_boards(pc_try_board,hu_own_board);
 } 
 
 
 void battleship::print_full_game_data() const{
   cout << "    MY  SHOTS                MY  SHIPS" << endl;
-  //  print_two_boards(pc_try_board,pc_own_board);
- print_two_boards(pc_try_board,hu_own_board);
+  print_two_boards(pc_try_board,pc_own_board);
 } 
