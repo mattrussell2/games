@@ -124,11 +124,11 @@ void battleship::add_hit_to_ships(board *&b,vector<ship> *&ships, pboard *&pb,in
 	if (disp){
 	  cout << "ARGH! YOUVE SUNK ME SHIP: ";
 	  char c = s.get_char();
-	  if (c=='A') cout << "DRATS! An Aircraft Carrier!" << endl;
+	    if (c=='A') cout << "DRATS! An Aircraft Carrier!" << endl;
 	  if (c=='B') cout << "OH NO! A Battleship!" << endl;
 	  if (c=='C') cout << "EGADS! A Cruiser!" << endl;
 	  if (c=='S') cout << "GOODNESS! A Submarine!" << endl;
-	  if (c=='D') cout << "RATS! A Destroyer" << endl;        
+	  if (c=='D') cout << "RATS! A Destroyer" << endl;       
 	}
 	string sunk_string = "\033[1;31m" + s.get_name().substr(0,1) + "\033[0m";
 	//replace the ship on the try board with the char of the ship
@@ -325,67 +325,79 @@ void battleship::pc_make_guess(){
   
   cout << "PC guesses: " + string(1,(char)(y+65)) << x+1;
   if (hu_own_board->at(y).at(x)!="*") {
-    cout << "\033[1;31m hit!\033[0m" << endl;
+       cout << "\033[1;31m hit!\033[0m" << endl;
     register_hit(hu_own_board,pc_try_board,pc_pboard,x,y); 
     add_hit_to_ships(hu_own_board,hu_ships,pc_pboard,x,y,1); //show hits to user
     add_hit_to_ships(pc_try_board,hu_ships,pc_pboard,x,y,0);
   }else {
-    cout << "\033[1;34m miss!\033[0m" << endl;
+      cout << "\033[1;34m miss!\033[0m" << endl;
     register_miss(hu_own_board,pc_try_board,pc_pboard,x,y);
   }
-  cout << endl;
+   cout << endl;
 }
 
 
 void battleship::pc_test(){
   string diffs[3]={"easy","medium","hard"};
-  int e[10000];
-  int m[10000];
-  int h[10000];
-  int turn_counter;
-  for (int i=0;i<3;i++){
-    cout << "Starting difficulty: " << diffs[i] << endl;
-    for (int j=0;j<10000;j++){
-      difficulty=diffs[i]; //set difficulty
-      pc_pboard = new pboard();      hu_pboard = new pboard();
-      
-      pc_try_board = new board();    hu_try_board = new board();
-      pc_own_board = new board();    hu_own_board = new board();
-      
-      init_board(pc_try_board);      init_board(hu_try_board);  
-      init_board(pc_own_board);      init_board(hu_own_board);
-      
-      init_pboard(pc_pboard);        init_pboard(hu_pboard);
-      
-      pc_ships = new vector<ship>(); 
-      hu_ships = new vector<ship>();
-      
-      generate_ships(hu_own_board,hu_ships,0);  
-      generate_ships(pc_own_board,pc_ships,0);  
+  //int e[500000];
+  //int m[500000];
+  int h[500000];
+  int turn_counter;int perfect_counter;
+  //  for (int i=0;i<3;i++){
+  //  cout << "Starting difficulty: " << diffs[i] << endl;
+  perfect_counter=0;
+  for (int j=0;j<500000;j++){
+    if (j%10000==0) {
+      cout << "J = " << j << endl; 
+      for (int z=0;z<j;z++){
+      //    if (i==0) {sum+=e[j]; if (e[j]==17) perfect_counter++;}
+      // if (i==1) {sum+=m[j]; if (m[j]==17) perfect_counter++;}
+	 /*if (i==2) {*/
+	 if (h[z]==17) perfect_counter++;//}
+	 cout << "perfect counter: " << perfect_counter << endl;
+       }
+    }
+    difficulty=diffs[2]; //set difficulty
+    pc_pboard = new pboard();      hu_pboard = new pboard();
     
-      turn_counter=0;
-      while(!gameover()){
-	pc_make_guess();
-	turn_counter++;
-      }
-      if (i==0) e[j]=turn_counter;
-      if (i==1) m[j]=turn_counter;
-      if (i==2) h[j]=turn_counter;
+    pc_try_board = new board();    hu_try_board = new board();
+    pc_own_board = new board();    hu_own_board = new board();
+    
+    init_board(pc_try_board);      init_board(hu_try_board);  
+    init_board(pc_own_board);      init_board(hu_own_board);
+    
+    init_pboard(pc_pboard);        init_pboard(hu_pboard);
+    
+    pc_ships = new vector<ship>(); 
+    hu_ships = new vector<ship>();
+    
+    generate_ships(hu_own_board,hu_ships,0);  
+    generate_ships(pc_own_board,pc_ships,0);  
+    
+    turn_counter=0;
+    while(!gameover()){
+      pc_make_guess();
+      turn_counter++;
     }
+    //if (i==0) e[j]=turn_counter;
+    //if (i==1) m[j]=turn_counter;
+    /* if (i==2)*/ h[j]=turn_counter;
   }
-  int sum;
+  //  }
+  int sum; 
   double avg;
-  for (int i=0;i<3;i++){
-    sum=0; 
-    for (int j=0;j<10000;j++){
-      if (i==0) sum+=e[j];
-      if (i==1) sum+=m[j];
-      if (i==2) sum+=h[j];
-    }
-    avg = sum / 10000.0;
-    cout << "For difficulty difficult the average number of turns was: " << avg << endl;
+  //for (int i=0;i<3;i++){
+  sum=0; perfect_counter=0;
+  for (int j=0;j<500000;j++){
+      //    if (i==0) {sum+=e[j]; if (e[j]==17) perfect_counter++;}
+      // if (i==1) {sum+=m[j]; if (m[j]==17) perfect_counter++;}
+    /*if (i==2) {*/sum+=h[j]; if (h[j]==17) perfect_counter++;//}
   }
+  avg = sum / 500000.0;
+  cout << "For difficulty " << diffs[2]<< " the average number of turns was: " << avg << endl;
+  cout << "perfect counter for this difficulty is: " << perfect_counter << endl;
 }
+//}
   
 
 //continue allowing the user to guess until one player wins
@@ -509,7 +521,7 @@ void battleship::generate_ships(board *&b, vector<ship> *&ships, bool hu_pc){
     ship_name = ship_name_lookup[i];
     if (hu_pc==1){
       cout << "Placing ships of type " << ship_name << " (length: " << len << ")" << endl;
-      print_board(b);
+      //  print_board(b);
       get_start_coord(b,len,x,y,d);      
     }else find_valid_start_loc(b,len,x,y,d);
     place_ship(b,len,x,y,d,string(1,ship_name.at(0)));
@@ -569,6 +581,6 @@ void battleship::print_user_game_data() const{
 
 
 void battleship::print_full_game_data() const{
-  cout << "    MY  SHOTS                MY  SHIPS" << endl;
-  print_two_boards(pc_try_board,pc_own_board);
+  cout << "    MY  SHIPS                MY  SHOTS" << endl;
+  print_two_boards(pc_own_board,pc_try_board);
 } 
