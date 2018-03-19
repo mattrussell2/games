@@ -1,6 +1,3 @@
-#
-# Makefile for Boggle, hw6
-#
 CXX = g++
 FLAGS = -Wall -Wextra -g -std=c++11
 
