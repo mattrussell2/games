@@ -13,8 +13,7 @@ run battleship: ./battleship
 
 in order to play, simply follow the onscreen directions.
 
-currently easy and medium AI functionality are both implemented. 
-fuller AI functionality to come soon. 
+currently easy, medium, and hard AI functionality are implemented. 
 
 :)
 
