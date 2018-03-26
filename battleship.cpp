@@ -521,7 +521,7 @@ void battleship::generate_ships(board *&b, vector<ship> *&ships, bool hu_pc){
     ship_name = ship_name_lookup[i];
     if (hu_pc==1){
       cout << "Placing ships of type " << ship_name << " (length: " << len << ")" << endl;
-      //  print_board(b);
+      print_board(b);
       get_start_coord(b,len,x,y,d);      
     }else find_valid_start_loc(b,len,x,y,d);
     place_ship(b,len,x,y,d,string(1,ship_name.at(0)));
