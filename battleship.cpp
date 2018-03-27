@@ -296,6 +296,11 @@ void battleship::calc_probabilities(board *b, pboard *&pb){
   }
 }
 
+struct p{
+  int x;
+  int y;
+};
+
 void battleship::find_best_guess(board *b, pboard *&pb, int &x, int &y){
   calc_probabilities(b,pb);
   int largest_p=0;
@@ -307,6 +312,24 @@ void battleship::find_best_guess(board *b, pboard *&pb, int &x, int &y){
       }
     }
   }
+
+  vector<p> possibles;
+  p a;
+  //first set of 
+  for (int i=0;i<10;i++){
+    for (int j=0;j<10;j++) {
+      if (pb->at(i).at(j)==largest_p && is_valid_loc(b,j,i)){
+	a.x=j;
+	a.y=i;
+	possibles.push_back(a);
+      }
+    }
+  }
+  int ran=possibles.size();
+  if (ran==1) ran = 0;
+  else ran = rand() % (ran-1);
+  x=possibles.at(ran).x;
+  y=possibles.at(ran).y;
 }
 
 void battleship::pc_make_guess(){
