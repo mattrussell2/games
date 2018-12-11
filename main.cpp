@@ -2,5 +2,7 @@
 
 int main(){
   battleship *b = new battleship;
-  b->run_game();//pc_test();
+  b->run_game();
+  delete b;
+  b = NULL;
 }
