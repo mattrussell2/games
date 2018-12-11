@@ -1,4 +1,4 @@
-# battleshi      
+# battleship      
 
 welcome to battleship!
 
