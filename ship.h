@@ -1,3 +1,7 @@
+//ship.h 
+//by matt russell
+//2019
+
 #include<iostream>
 #include<string>
 #include<vector> 
@@ -20,7 +24,7 @@ class ship{
  public:
   ship();
   ship(string s,string c, int x, int y,int l, bool d);
-  ~ship();
+  ~ship() {};
   
   string get_name() const { return name; };
   string get_char() const { return c; }; 
