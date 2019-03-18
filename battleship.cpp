@@ -1,3 +1,7 @@
+//battleship.cpp
+//by matt russell
+//2019
+
 #include "battleship.h"
 #include <algorithm>
 #include <fstream>
