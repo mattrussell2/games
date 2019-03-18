@@ -39,7 +39,6 @@ class battleship{
 
   void get_start_coord(board *b, int len, int &x, int &y, bool &d) const;
   void generate_ships(board *&b,vector<ship> *&ships, bool hu_pc);
-  //  void human_generate_ships(board *&b,vector<ship> *&ships);
   void find_valid_start_loc(board *b,int len, int &x, int &y, bool &d) const;
   bool check_clear_area(board *b,int len, int x, int y, int d) const;
   void place_ship(board *&b,int len, int x, int y, bool d,string s);
@@ -47,6 +46,8 @@ class battleship{
   void register_hit(board *&hit_board,board *&fire_board,pboard *&fire_pboard,int x, int y);
   void register_miss(board *&missed_board,board *&f_board,pboard *&f_pboard,int x, int y);
 
+  bool test_for_hit(board *b, int i, int j) const;
+    
   bool game_ready(board *human_board) const; 
   bool gameover() const;
 
@@ -63,7 +64,7 @@ class battleship{
   void print_board(board *b) const; 
   void print_two_boards(board *b, board *b2) const;
   void print_user_game_data() const;
-  void print_full_game_data() const;
+  void print_full_game_data(string outstr) const;
 
   board *pc_own_board;
   board *pc_try_board;
