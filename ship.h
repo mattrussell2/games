@@ -19,23 +19,23 @@ class ship{
  
  public:
   ship();
-  ship(string s,char c, int x, int y,int l, bool d);
+  ship(string s,string c, int x, int y,int l, bool d);
   ~ship();
   
-  string get_name() const {return name;};
-  char get_char() const {return c;};
-  int get_length() const {return length;};
-  bool get_dir() const {return dir;};
+  string get_name() const { return name; };
+  string get_char() const { return c; }; 
+  int get_length() const { return length; };
+  bool get_dir() const { return dir; };
   bool is_sunk() const;    //returns whether or not it's sunk
-  int get_x() const {return start_x;};
-  int get_y() const {return start_y;};
+  int get_x() const { return start_x; };
+  int get_y() const { return start_y; };
   void print() const;
   void set_hits();
   bool within_ship(int x, int y) const;
   void add_hit_to_ship(int x, int y);
  private:
   
-  char c;  
+  string c;  
   string name; //name
   int length;  //length of ship
   bool dir;    //direction of ship (1 is vertical, 0 horizontal)

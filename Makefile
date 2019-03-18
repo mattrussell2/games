@@ -5,5 +5,5 @@ battleship: main.cpp battleship.cpp ship.cpp
 	${CXX} ${FLAGS} -o battleship main.cpp battleship.cpp ship.cpp
 
 clean:
-	rm -f *.o *~ *#
+	rm -f *.o *~ *# battleship
 

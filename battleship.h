@@ -75,7 +75,9 @@ class battleship{
   pboard *pc_pboard;
  
   int ship_len_lookup[5] = {5,4,3,3,2};
-  char ship_class_lookup[5] = {'A','B','C','S','D'};
+  string ship_class_lookup[5] = {"\u001b[33;1mA\u001b[0m","\u001b[36;1mB\u001b[0m",
+				 "\u001b[37;1mC\u001b[0m","\u001b[35;1mS\u001b[0m",
+				 "\u001b[32;1mD\u001b[0m"}; //were chars
   string ship_name_lookup[5] = {"Aircraft Carrier", "Battleship", "Crusier",
 				"Submarine","Destroyer"};
   vector<ship> *pc_ships;

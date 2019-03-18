@@ -13,7 +13,7 @@ ship::ship(){
   dir = -1; 
 }
 
-ship::ship(string n,char ch, int x, int y, int l, bool d){
+ship::ship(string n,string ch, int x, int y, int l, bool d){
   name = n;
   c=ch;
   start_x = x; 

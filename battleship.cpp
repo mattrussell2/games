@@ -90,15 +90,15 @@ void battleship::init_board(board *&b){
   for (int i=0; i<10; i++){
     b->push_back(v);
     for (int j=0; j<10; j++){
-      b->at(i).push_back("*");
+      b->at(i).push_back("\033[1;34m*\033[0m"); //was just "*"
     }
   }
 } 
 
 //given a board and a location, test if there's a hit ship there
 bool battleship::test_for_hit(board *b, int i, int j) const{
-  return (b->at(i).at(j)!="*" &&
-	  b->at(i).at(j)!="\033[1;34m_\033[0m" &&
+  return (b->at(i).at(j)!="\033[1;34m*\033[0m" && //"*" &&
+	  b->at(i).at(j)!="\033[1;37m_\033[0m" &&
 	  b->at(i).at(j)!="\033[1;31mX\033[0m");
 }
 
@@ -133,12 +133,12 @@ void battleship::add_hit_to_ships(board *&b,vector<ship> *&ships, pboard *&pb,in
 	ship s = ships->at(i);
 	if (disp){
 	  cout << "ARGH! YOUVE SUNK ME SHIP: ";
-	  char c = s.get_char();
-	  if (c == 'A') cout << "DRATS! An Aircraft Carrier!" << endl;
-	  if (c == 'B') cout << "OH NO! A Battleship!" << endl;
-	  if (c == 'C') cout << "EGADS! A Cruiser!" << endl;
-	  if (c == 'S') cout << "GOODNESS! A Submarine!" << endl;
-	  if (c == 'D') cout << "RATS! A Destroyer" << endl;       
+	  string c = s.get_char();
+	  if (c == "\u001b[33;1mA\u001b[0m") cout << "DRATS! An Aircraft Carrier!" << endl;
+	  if (c == "\u001b[36;1mB\u001b[0m") cout << "OH NO! A Battleship!" << endl;
+	  if (c == "\u001b[37;1mC\u001b[0m") cout << "EGADS! A Cruiser!" << endl;
+	  if (c == "\u001b[35;1mS\u001b[0m") cout << "GOODNESS! A Submarine!" << endl;
+	  if (c == "\u001b[32;1mD\u001b[0m") cout << "RATS! A Destroyer" << endl;       
 	}
 	string sunk_string = "\033[1;31m" + s.get_name().substr(0,1) + "\033[0m";
 	//replace the ship on the try board with the char of the ship
@@ -157,8 +157,8 @@ void battleship::register_hit(board *&hit_board, board *&firing_board, pboard *&
 }
 
 void battleship::register_miss(board *&missed_board, board *&firing_board, pboard *& f_pboard, int x, int y){
-  missed_board->at(y).at(x)="\033[1;34m_\033[0m";
-  firing_board->at(y).at(x)="\033[1;34m_\033[0m";
+  missed_board->at(y).at(x)="\033[1;37m_\033[0m";
+  firing_board->at(y).at(x)="\033[1;37m_\033[0m";
   f_pboard->at(y).at(x) = -3;
 }
 
@@ -177,11 +177,11 @@ void battleship::hu_make_guess(){
     cout << "please enter valid coordinates." << endl;   
   else{
     cout << "Human guesses: " << input << " ";
-    if (pc_own_board->at(y).at(x) != "*") {
+    if (pc_own_board->at(y).at(x) != "\033[1;34m*\033[0m") {//"*") {
       if (pc_own_board->at(y).at(x) == "\033[1;31mX\033[0m"){
 	cout << "already hit here!" << endl;	
       }
-      if (pc_own_board->at(y).at(x) == "\033[1;34m_\033[0m"){
+      if (pc_own_board->at(y).at(x) == "\033[1;37m_\033[0m"){
 	cout << "already missed here!" << endl;	
       }else{ 
 	cout << "\033[1;31m hit!\033[0m" << endl;
@@ -199,7 +199,7 @@ void battleship::easy_guess(board *b, int &x, int &y) const{
   srand(time(NULL));
   x = rand() % 10;
   y = rand() % 10;
-  while (b->at(y).at(x) != "*"){
+  while (b->at(y).at(x) != "\033[1;34m*\033[0m"){ //"*"){
     x = rand() % 10;
     y = rand() % 10;
   }
@@ -224,7 +224,7 @@ bool battleship::search_for_hit_location(board *b, int &x, int &y) const{
 //checks to see if a given location is valid to fire;
 bool battleship::is_valid_loc(board *b,int x, int y) const{
   if (x>9 || y > 9 || x < 0 || y < 0) return false;
-  if (b->at(y).at(x)=="*") return true;
+  if (b->at(y).at(x)=="\033[1;34m*\033[0m") return true;//"*") return true;
   else return false;      
 }
 
@@ -359,7 +359,7 @@ void battleship::pc_make_guess(){
   if (difficulty=="hard") find_best_guess(pc_try_board, pc_pboard, x, y);
   
   cout << "PC guesses: " + string(1,(char)(y+65)) << x+1;
-  if (hu_own_board->at(y).at(x) != "*") {
+  if (hu_own_board->at(y).at(x) != "\033[1;34m*\033[0m") {//"*") {
        cout << "\033[1;31m hit!\033[0m" << endl;
     register_hit(hu_own_board, pc_try_board, pc_pboard, x, y); 
     add_hit_to_ships(hu_own_board, hu_ships, pc_pboard, x, y, 1); //show hits to user
@@ -453,13 +453,13 @@ bool battleship::check_clear_area(board *board, int len, int x, int y, int d) co
   int count = 0;
   if (d == 0){
     for (int z=x; z<x+len; z++){
-      if (board->at(y).at(z)=="*" || board->at(y).at(z)=="\033[1;31mX\033[0m") count++;
-    }
+      if (board->at(y).at(z)=="\033[1;34m*\033[0m" || board->at(y).at(z)=="\033[1;31mX\033[0m") count++;
+    } //"*"
   }
   else if (d == 1){
     for (int z=y; z<y+len; z++){
-      if (board->at(z).at(x)=="*" || board->at(z).at(x)=="\033[1;31mX\033[0m") count++;
-    }
+      if (board->at(z).at(x)=="\033[1;34m*\033[0m" || board->at(z).at(x)=="\033[1;31mX\033[0m") count++;
+    } //"*"
   }
   if (count == len) return true;
   else return false;
@@ -499,7 +499,7 @@ bool battleship::game_ready(board *human_board) const {
   int usr_star_count = 0;
   for (int i=0; i<10; i++){
     for (int j=0; j<10; j++){
-      if (human_board->at(i).at(j) == "*")
+      if (human_board->at(i).at(j) == "\033[1;34m*\033[0m")//"*")
 	usr_star_count++;
     }
   }
@@ -547,9 +547,9 @@ void battleship::get_start_coord(board *b, int len, int &x, int &y, bool &d) con
 
 void battleship::generate_ships(board *&b, vector<ship> *&ships, bool hu_pc){
   int x, y, len;
-  bool d;
+  bool direction;
   string ship_name;
-  char ship_class;
+  string ship_class;
   ship s;
   for (int i=0; i<5; i++){
     len = ship_len_lookup[i];
@@ -558,12 +558,12 @@ void battleship::generate_ships(board *&b, vector<ship> *&ships, bool hu_pc){
     if (hu_pc){
       cout << "Placing ships of type " << ship_name << " (length: " << len << ")" << endl;
       print_board(b);
-      get_start_coord(b, len, x, y, d);      
+      get_start_coord(b, len, x, y, direction);      
     }else {
-      find_valid_start_loc(b, len, x, y, d);
+      find_valid_start_loc(b, len, x, y, direction);
     }
-    place_ship(b, len, x, y, d, string(1,ship_name.at(0)));
-    s = ship(ship_name, ship_class, x, y, len, d);
+    place_ship(b, len, x, y, direction, ship_class);//string(1,ship_name.at(0)));
+    s = ship(ship_name, ship_class, x, y, len, direction);
     s.set_hits();
     ships->push_back(s);
   }
