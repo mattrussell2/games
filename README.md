@@ -1,6 +1,5 @@
 # battleship
-by matt russell
-
+by matt russell\n
 updated march 2019
 
 
