@@ -1,3 +1,7 @@
+#battleship.h 
+#by matt russell
+#2019
+
 #include<iostream>
 #include<string>
 #include<cstdlib>
