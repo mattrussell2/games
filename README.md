@@ -1,4 +1,6 @@
-# battleship      
+# battleship
+# by matt russell
+# updated march 2019
 
 welcome to battleship!
 
