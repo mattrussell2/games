@@ -1,8 +1,8 @@
+//ship.cpp
+//by matt russell
+//2019
+
 #include "ship.h"
-
-ship::~ship(){
-
-}
 
 ship::ship(){
   name="";
