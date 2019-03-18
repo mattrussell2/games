@@ -131,7 +131,7 @@ void battleship::add_hit_to_ships(board *&b,vector<ship> *&ships, pboard *&pb,in
       ships->at(i).add_hit_to_ship(x,y);
       if (ships->at(i).is_sunk()) {
 	ship s = ships->at(i);
-	if (disp){
+	if (disp){	  
 	  cout << "ARGH! YOUVE SUNK ME SHIP: ";
 	  string c = s.get_char();
 	  if (c == "\u001b[33;1mA\u001b[0m") cout << "DRATS! An Aircraft Carrier!" << endl;
@@ -162,10 +162,10 @@ void battleship::register_miss(board *&missed_board, board *&firing_board, pboar
   f_pboard->at(y).at(x) = -3;
 }
 
-void battleship::hu_make_guess(){
+string battleship::hu_make_guess(){
   int x, y;
-  string input;
-  cout << "Enter a coordinates (i.e. A3): ";
+  string input, retstr;
+  cout << "Enter a coordinate (i.e. A3): ";
   getline(cin,input);
   y = int(toupper(input[0])) - 65;
   if (input.length() > 2)
@@ -176,23 +176,26 @@ void battleship::hu_make_guess(){
   if (x>9 || y > 9 || x < 0 || y < 0)
     cout << "please enter valid coordinates." << endl;   
   else{
-    cout << "Human guesses: " << input << " ";
+    retstr = "You guess:  \u001b[32;1m" + input + "\u001b[0m - ";
     if (pc_own_board->at(y).at(x) != "\033[1;34m*\033[0m") {//"*") {
       if (pc_own_board->at(y).at(x) == "\033[1;31mX\033[0m"){
-	cout << "already hit here!" << endl;	
+	return "already hit here!";
       }
       if (pc_own_board->at(y).at(x) == "\033[1;37m_\033[0m"){
-	cout << "already missed here!" << endl;	
-      }else{ 
-	cout << "\033[1;31m hit!\033[0m" << endl;
-	register_hit(pc_own_board, hu_try_board, hu_pboard, x, y); 
+	return "already missed here!";
+      }else{ 	
+	register_hit(pc_own_board, hu_try_board, hu_pboard, x, y);
+	retstr += "\033[1;31mhit!\033[0m";
+	hu_guesses.push_back("\u001b[31;1m" + input + "\u001b[0m");
 	add_hit_to_ships(hu_try_board, pc_ships, hu_pboard, x, y, 1);           
       }
-    }else {
-      cout << "\033[1;34m miss!\033[0m" << endl;
-      register_miss(pc_own_board, hu_try_board, hu_pboard, x, y); 
+    }else {      
+      register_miss(pc_own_board, hu_try_board, hu_pboard, x, y);
+      retstr += "\033[1;37mmiss!\033[0m";
+      hu_guesses.push_back("\u001b[37;1m" + input + "\u001b[0m");
     }
   }
+  return retstr;
 }
 
 void battleship::easy_guess(board *b, int &x, int &y) const{
@@ -343,8 +346,9 @@ void battleship::find_best_guess(board *b, pboard *&pb, int &x, int &y){
   y = possibles.at(ran).y;
 }
 
-void battleship::pc_make_guess(){
+string battleship::pc_make_guess(){
   int x; int y; bool found;
+  string retstr = "";
   if (difficulty == "easy") easy_guess(pc_try_board, x, y);
   if (difficulty == "medium"){
     x=0;
@@ -358,17 +362,19 @@ void battleship::pc_make_guess(){
   }
   if (difficulty=="hard") find_best_guess(pc_try_board, pc_pboard, x, y);
   
-  cout << "PC guesses: " + string(1,(char)(y+65)) << x+1;
-  if (hu_own_board->at(y).at(x) != "\033[1;34m*\033[0m") {//"*") {
-       cout << "\033[1;31m hit!\033[0m" << endl;
+  retstr = "PC guesses: \u001b[32;1m" + string(1,(char)(y+65)) + to_string(x+1) + "\u001b[0m - ";
+  if (hu_own_board->at(y).at(x) != "\033[1;34m*\033[0m") {
+    retstr += "\033[1;31mhit!\033[0m";
+    pc_guesses.push_back("\u001b[31;1m" + string(1,(char)(y+65)) + to_string(x+1) + "\u001b[0m");
     register_hit(hu_own_board, pc_try_board, pc_pboard, x, y); 
     add_hit_to_ships(hu_own_board, hu_ships, pc_pboard, x, y, 1); //show hits to user
     add_hit_to_ships(pc_try_board, hu_ships, pc_pboard, x, y, 0);
   }else {
-      cout << "\033[1;34m miss!\033[0m" << endl;
+    retstr += "\033[1;37mmiss!\033[0m";
+    pc_guesses.push_back("\u001b[37;1m" + string(1,(char)(y+65)) + to_string(x+1) + "\u001b[0m");
     register_miss(hu_own_board, pc_try_board, pc_pboard, x, y);
   }
-   cout << endl;
+  return retstr;
 }
 
 
@@ -437,11 +443,18 @@ void battleship::pc_test(){
 void battleship::run_game(){ 
   int turn_counter=0;
   start_game();
+  string hu_guess, pc_guess;
   while(!gameover()){
-    hu_make_guess();   
-    pc_make_guess();    
-    print_user_game_data();
+    hu_guess = hu_make_guess();
+    if (hu_guess == "already hit here!" || hu_guess == "already missed here!"){
+      cout << hu_guess << endl << "Please guess again." << endl;
+      continue;
+    }
+    pc_guess = pc_make_guess();    
+    print_user_game_data();    
     cout << endl;
+    //    cout << hu_guess << endl;
+    //cout << pc_guess << endl;
     turn_counter++;
   }
   cout << "The game was finished in " << turn_counter << " turns." << endl;
@@ -454,12 +467,12 @@ bool battleship::check_clear_area(board *board, int len, int x, int y, int d) co
   if (d == 0){
     for (int z=x; z<x+len; z++){
       if (board->at(y).at(z)=="\033[1;34m*\033[0m" || board->at(y).at(z)=="\033[1;31mX\033[0m") count++;
-    } //"*"
+    } 
   }
   else if (d == 1){
     for (int z=y; z<y+len; z++){
       if (board->at(z).at(x)=="\033[1;34m*\033[0m" || board->at(z).at(x)=="\033[1;31mX\033[0m") count++;
-    } //"*"
+    }
   }
   if (count == len) return true;
   else return false;
@@ -576,7 +589,7 @@ void print_digits(){
 
 void print_header();
 void print_header(){
-  cout << "   YOUR SHOTS               YOUR SHIPS" << endl;
+  cout << "   YOUR SHOTS               YOUR SHIPS       YOUR MOVES    PC MOVES" << endl;
 }
 
 string green_char(int i);
@@ -592,7 +605,11 @@ void battleship::print_board(board *b) const{
     for (int j=0; j<10; j++){
       cout << b->at(i).at(j);
     }
-    cout << " " << green_char(i) << endl; 
+    if (i < hu_guesses.size() && i < pc_guesses.size()){
+      cout << " " << green_char(i) <<"         "<< hu_guesses[hu_guesses.size()-i-1] <<"           "<< pc_guesses[pc_guesses.size()-i-1] << endl;
+    }else{
+      cout << " " << green_char(i) << endl;
+    }	  
   }    
 }
 
@@ -608,8 +625,13 @@ void battleship::print_two_boards(board *b1, board*b2) const{
     for (int j=0; j<10; j++){
       cout <<  b2->at(i).at(j);
     }
-    cout << " " << green_char(i) << endl;
+    if (i < hu_guesses.size() && i < pc_guesses.size()){
+      cout << " " << green_char(i) <<"         "<< hu_guesses[hu_guesses.size()-1-i] <<"           "<< pc_guesses[pc_guesses.size()-1-i] << endl;
+    }else{
+      cout << " " << green_char(i) << endl;
+    }	//  cout << " " << green_char(i) << endl;
   }
+  print_digits();
 }
 
 void battleship::print_user_game_data() const{

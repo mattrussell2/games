@@ -52,8 +52,8 @@ class battleship{
   bool gameover() const;
 
   //these two functions make the guesses and call register hits/miss fns.
-  void hu_make_guess();
-  void pc_make_guess();
+  string hu_make_guess();
+  string pc_make_guess();
 
   //first board is the TRY board that we will add the letters to if a ship is sunk
   void add_hit_to_ships(board *&b,vector<ship> *&ships, pboard *& pb,int x, int y, bool disp);
@@ -84,5 +84,8 @@ class battleship{
   vector<ship> *hu_ships;
 
   string difficulty;
+
+  vector<string> pc_guesses;
+  vector<string> hu_guesses;
 
 };
