@@ -1,3 +1,7 @@
+//main.cpp
+//by matt russell
+//2019
+
 #include "battleship.h"
 
 int main(){
