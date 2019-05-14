@@ -4,9 +4,9 @@ using namespace std;
 
 Board::Board(){
   board = new string*[24];
-  for (int i=0; i<24; i++){
+  for (int i = 0; i < 24; i++){
     board[i] = new string[15];
-    for (int j=0; j<15; j++){
+    for (int j = 0; j < 15; j++){
       board[i][j] = "empty";
     }
   }
@@ -16,15 +16,15 @@ Board::Board(){
   }
   
   for (int i=0;i<3;i++){   
-     board[7][i] =  "white";
-     board[16][i] = "\033[0;42;30mblack\033[1;42;37m";
+    board[7][i] =  "white";
+    board[16][i] = "\033[0;42;30mblack\033[1;42;37m";
   }
   
   for (int i=0;i<5;i++){
-     board[5][i] =  "white";
-     board[11][i] = "\033[0;42;30mblack\033[1;42;37m";
-     board[12][i] = "white";
-     board[18][i] = "\033[0;42;30mblack\033[1;42;37m";
+    board[5][i] =  "white";
+    board[11][i] = "\033[0;42;30mblack\033[1;42;37m";
+    board[12][i] = "white";
+    board[18][i] = "\033[0;42;30mblack\033[1;42;37m";
   }
   dice = new int[2];
   double_cube = 0;
@@ -32,7 +32,7 @@ Board::Board(){
   knocked_white = 0;
   off_black = 0;
   off_white = 0;
-  srand(time(NULL));
+  srand(time(NULL)); 
 };
 
 int* Board::roll_dice(){
@@ -40,7 +40,6 @@ int* Board::roll_dice(){
   dice[1] = rand() % 6 + 1;
   return dice;
 }
-
 
 Board::~Board(){
   for (int i=0;i<25;i++){
@@ -56,6 +55,7 @@ bool Board::test_space_empty(int space){
 }
 
 string Board::color_on_space(int space){
+  // cout << "checking color on space " << space << endl;
   return board[space-1][0];
 }
 
@@ -89,7 +89,7 @@ void Board::add_one_to_space(int space, string color){
   board[space-1][loc] = color;
 }
 void Board::add_one_off_board(string color){
-  if (color == "white") {off_white++;}
+  if (color == "white") off_white++; 
   else off_black++;
 }
 void Board::add_knocked(string color){

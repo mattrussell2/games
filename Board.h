@@ -9,6 +9,7 @@
 using namespace std;
 
 //todo: implement knocks,  endgame, and AI.
+const int PIPS = 15;
 
 class Board{
 
@@ -28,8 +29,8 @@ class Board{
   void remove_knocked(string color);
   int get_knocked(string color);
   void add_one_off_board(string color);
-  bool check_gameover() { return (off_black == 15 || off_white == 15); };
-  bool white_win() { return (off_white == 15); };
+  bool check_gameover() { return (off_black == PIPS || off_white == PIPS); };//(off_black == 15 || off_white == 15); };
+  bool white_win() { return   (off_white == PIPS); };//(off_white == 15); };
  private:
   string **board;
   int *dice;

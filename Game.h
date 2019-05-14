@@ -4,7 +4,7 @@
 
 class Game{
  public:
-  Game() { b = new Board(); first_move = true; curr_taken = new bool[2] {false, false};};
+  Game() { b = new Board(); first_move = true; curr_taken = new bool[2] {false, false}; };
   ~Game(){ delete b; delete [] curr_taken; delete [] dice; };
   void run_game();
   void welcome_message();
@@ -18,6 +18,8 @@ class Game{
   bool test_in_zone(string color);
   bool check_zone_move(bool print, int start, int end);
   bool validate_input();
+  bool doubles();
+  bool taken_turn(int start, int end); //test if this turn was taken.
  private:
   int first_pos, second_pos;
   string strin1, strin2;
