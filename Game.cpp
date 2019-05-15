@@ -1,10 +1,10 @@
 #include "Game.h"
 #include "Board.h"
 
+//issues: when in zone:  able to take a piece off the board when difference is < dice roll even if there are
+//        pieces above that piece that could be moved (on the board)
+// when have doubles, often valid moves not being correctly determined. sometimes no valid moves. 
 
-//issues: validating second move after making first where both pips are on the bar to start.
-//in zone, can move backwards.(both)
-//black in zone can go to zero (then segfaults)
 void Game::run_game()
 {
   b = new Board();
@@ -43,7 +43,7 @@ void Game::run_game()
 	white_score += b->double_amount() * 2;
       }
       else
-	white_score++;
+	white_score += b->double_amount();
     }else white_score ++;
   }
   else {    
@@ -60,7 +60,7 @@ void Game::run_game()
 	black_score += b->double_amount() * 2;
       }
       else
-	black_score++;
+	black_score += b->double_amount();
     }else black_score++;
   }
   b->set_score(white_score,black_score);
@@ -169,8 +169,7 @@ bool Game::check_zone_move(bool print, int start, int end){
       if (print) cout << "move is too large. please try again." << endl;
       return false;
     }   
-    if  (end == 25) {    
-      //difference is exactly the same as the die roll.
+    if  (end == 25) {       
       if ((!curr_taken[0] && difference == dice[0]) || (!curr_taken[1] && difference == dice[1])) return true;
       //if die roll is greater than the difference, make sure there aren't any higher possibilities. 
       if ((!curr_taken[0] && difference < dice[0]) || (!curr_taken[1] && difference < dice[1])){
@@ -272,14 +271,12 @@ bool Game::check_move(bool print,int start, int end){
     if (print) cout << "wrong starting color at that location. please try again." << endl;
     return false;
   }            
-    
-    
+        
   if (start > 0 && start < 25 && b->test_space_empty(start)) {
     if (print) cout << "board is empty at that starting position. please try again." << endl;      
     return false;
   }
-  
- 
+   
   if (taken_turn(start, end)) {     
     if (print) cout << "you have already moved that die. please try again" << endl;
     return false;
@@ -343,7 +340,7 @@ bool Game::determine_valid_moves(string color)
       else{
 	for (int i = 1; i < 25; i++){
 	  if (!curr_taken[0]){
-	    if (check_move(false, i,i + dice[0])) return true;
+	    if (check_move(false, i, i + dice[0])) return true;
 	  }
 	  if (!curr_taken[1]){
 	    if (check_move(false, i, i + dice[1])) return true;
@@ -477,7 +474,7 @@ void Game::take_turn(){
     } else curr_taken[1] = true;
 
     b->print_board();
-    if (i==0) cout << "move made. [dice read: " << dice[0] << " " << dice[1] << "]" << endl;      
+    cout << "move made. [dice read: " << dice[0] << " " << dice[1] << "]" << endl;      
   }        
   if (turn == "white") turn = "black";
   else                 turn = "white";   
