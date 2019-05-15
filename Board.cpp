@@ -27,11 +27,13 @@ Board::Board(){
     board[18][i] = "\033[0;42;30mblack\033[1;42;37m";
   }
   dice = new int[2];
-  double_cube = 0;
+  double_cube = 1;
   knocked_black = 0;
   knocked_white = 0;
   off_black = 0;
   off_white = 0;
+  white_score = 0;
+  black_score = 0;
   srand(time(NULL)); 
 };
 
@@ -111,18 +113,37 @@ void Board::print_board() {
   int boardindex;
   cout << endl;
   cout << "\33[1;42;37m    || ";
+  
+  //print numbers at the top
   for (int i=13;i<25;i++){    
     cout << " " << i << "   ";
     if (i==18) cout << "   ";
-  } cout << "||" << endl;
-
+  } cout << "||    " << endl;
+  
+  //print row of == signs
   cout << "    ||";
   for (int i=0; i<76; i++){
     cout << "=";  
-  } cout << "||" << endl;
+  } cout << "||    " << endl;
 
+  //print the pieces in the board
   for (int row=0; row<12; row++){
-    cout << "    || ";
+    if (row == 5){
+      cout << "\033[1;42;37mD:" << double_cube;
+      if (double_cube < 10) cout << " ";
+      cout << "|| ";
+    }else if (row == 3){
+      cout << "\033[1;42;37mW:" << white_score;
+      if (white_score < 10) cout << " ";
+      cout << "|| ";
+    }else if (row == 7){
+      cout << "\033[0;42;30mB:" << black_score;
+      if (black_score < 10) cout << " ";
+      cout << "\033[1;42;37m|| ";
+    }
+    else {
+      cout << "    || ";
+    }
     if (row < 5) { boardindex = 12; }
     else         { boardindex = 11; }
     for (int col=0; col<13; col++){
@@ -153,7 +174,7 @@ void Board::print_board() {
 	    cout << "\033[0;42;30m +";
 	  cout << num_pips_on_space(space) - 5;
 	  cout << "\033[1;42;37m";
-	  if (num_pips_on_space(space) > 9){
+	  if (num_pips_on_space(space) > 14){
 	    cout << "  ";
 	  }else cout << "   ";
 	}else {
@@ -161,24 +182,56 @@ void Board::print_board() {
 	}
 	if (i==5){
 	  if (row == 5 && knocked_white > 0) { cout << "\033[1;42;37mw" << knocked_white << " "; }
-	  else if (row == 6 && knocked_black > 0) { cout << "\033[0;43;30mb" << knocked_black << "\033[1;42;37m "; }
+	  else if (row == 6 && knocked_black > 0) { cout << "\033[0;42;30mb" << knocked_black << "\033[1;42;37m "; }
 	  else cout << "   ";
 	}
       }
     }
-    cout << "||" << endl;
+    if (row == 5) {
+      cout << "||" << "\033[0;42;30m b" << off_black << "\033[1;42;37m";
+							if (off_black < 10) cout << " ";
+										   cout << endl;
+									  
+    }else if (row == 6){
+	cout << "||" << "\033[1;42;37m w" << off_white;
+	if (off_white < 10) cout << " ";
+	cout << endl;
+      }
+      else {
+	cout << "||    " << endl;
+      }
   }
-   cout << "    ||";
+
+  //print the row of == at the bottom
+  cout << "    ||";
   for (int i=0; i<76; i++){
     cout << "=";  
   }
-  cout << "||" << endl;
+  cout << "||    " << endl;
+
+  //print the numbers at the bottom
   cout << "    || ";
   for (int i=12;i>0;i--){
     if (i < 10) cout << " ";
     cout << " " << i << "   ";
     if (i==7) cout << "   ";
   }
-  cout << "||\033[0m" << endl;
+  cout << "||    \033[0m" << endl;
   cout << endl;
-}
+};
+
+int Board::any_black_in_white_home(){
+  for (int i=1;i<7;i++){
+    if (color_on_space(i) == "\033[0;42;30mblack\033[1;42;37m")
+      return true;
+  }
+  return false;
+};
+
+int Board::any_white_in_black_home(){
+  for (int i=19;i<25;i++){
+    if (color_on_space(i) == "white")
+      return true;
+  }
+  return false;
+};
