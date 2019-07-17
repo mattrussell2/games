@@ -366,16 +366,16 @@ string battleship::pc_make_guess(){
   }
   if (difficulty=="hard") find_best_guess(pc_try_board, pc_pboard, x, y);
   
-  retstr = "PC guesses: \u001b[32;1m" + string(1,(char)(y+65)) + to_string(x+1) + "\u001b[0m - ";
+  retstr = "PC guesses: \u001b[32;1m" + string(1,(char)(y+65)) + to_string(x) + "\u001b[0m - ";
   if (hu_own_board->at(y).at(x) != "\033[1;34m*\033[0m") {
     retstr += "\033[1;31mhit!\033[0m";
-    pc_guesses.push_back("\u001b[31;1m" + string(1,(char)(y+65)) + to_string(x+1) + "\u001b[0m");
+    pc_guesses.push_back("\u001b[31;1m" + string(1,(char)(y+65)) + to_string(x) + "\u001b[0m");
     register_hit(hu_own_board, pc_try_board, pc_pboard, x, y); 
     add_hit_to_ships(hu_own_board, hu_ships, pc_pboard, x, y, 1); //show hits to user
     add_hit_to_ships(pc_try_board, hu_ships, pc_pboard, x, y, 0);
   }else {
     retstr += "\033[1;37mmiss!\033[0m";
-    pc_guesses.push_back("\u001b[37;1m" + string(1,(char)(y+65)) + to_string(x+1) + "\u001b[0m");
+    pc_guesses.push_back("\u001b[37;1m" + string(1,(char)(y+65)) + to_string(x) + "\u001b[0m");
     register_miss(hu_own_board, pc_try_board, pc_pboard, x, y);
   }
   return retstr;
