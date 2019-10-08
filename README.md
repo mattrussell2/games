@@ -1,11 +1,10 @@
 # battleship
 by matt russell<br>
-updated march 2019
+updated march 2019<br>
 
+welcome to battleship!<br>
 
-welcome to battleship!
-
-simply run <b>battleship</b> to play.
+simply make and run <b>battleship</b> to play.<br>
 
 :)
 
