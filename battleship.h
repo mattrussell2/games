@@ -37,7 +37,7 @@ class battleship{
   void find_medium_good_spot(board *b, int &x, int &y) const;
   void easy_guess(board *b, int &x, int &y) const;
   
-  void could_hit_ship(board *b,pboard *pb,int x, int y, int len, bool d);
+  void modify_probabilities(board *b,pboard *pb,int x, int y, int len, bool d);
   bool check_nearby_hit(board *b, int len, int x, int y, int d) const;
 
   void get_start_coord(board *b, int len, int &x, int &y, bool &d) const;

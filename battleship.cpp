@@ -290,9 +290,15 @@ bool battleship::check_nearby_hit(board *board, int len, int x,
   return false;
 }
 
-void battleship::could_hit_ship(board *b,pboard *pb, int x,
-				int y, int len, bool d) {
-  int modifier;
+void battleship::modify_probabilities(board *b,pboard *pb, int x,
+				      int y, int len, bool d) {
+  int modifier, boundcheck;
+  if (d == 0) {
+    boundcheck = x + len - 1;
+  }
+  else {
+    boundcheck = y + len - 1;
+  }
   if (d == 0){ //horizontal
     if (x + len - 1 <= 9 && check_clear_area(b, len, x, y, 0)){ 
       if (check_nearby_hit(b, len, x, y, 0)) {
@@ -302,7 +308,7 @@ void battleship::could_hit_ship(board *b,pboard *pb, int x,
 	modifier = 1;
       }
       for (int i = 0; i < len; i++){
-	pb->at(y).at(x+i) += modifier;
+	pb->at(y).at(x + i) += modifier;
       }
     }
   }
@@ -315,7 +321,7 @@ void battleship::could_hit_ship(board *b,pboard *pb, int x,
 	modifier = 1;
       }
       for (int i = 0;i < len;i++){
-	pb->at(y+i).at(x) += modifier;
+	pb->at(y + i).at(x) += modifier;
       }
     }
   }
@@ -327,8 +333,8 @@ void battleship::calc_probabilities(board *b, pboard *pb){
     for (int j = 0; j < 10; j++){ //for each space
       for (int z = 0; z < 5; z++){ //for each ship
 	len = ship_len_lookup[z];
-	could_hit_ship(b, pb, j, i, len, 0);
-	could_hit_ship(b, pb, j, i, len, 1);
+	modify_probabilities(b, pb, j, i, len, 0);
+	modify_probabilities(b, pb, j, i, len, 1);
       }
     }
   }
