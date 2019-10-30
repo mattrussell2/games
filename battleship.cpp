@@ -187,16 +187,17 @@ string battleship::hu_make_guess(){
   else
     x = (int)(toupper(input[1])) - 48;
   
-  if (x > 9 || y > 9 || x < 0 || y < 0)
-    std::cout << "please enter valid coordinates." << std::endl;   
+  if (x > 9 || y > 9 || x < 0 || y < 0){
+    return "Please enter valid coordinates.";
+  }
   else{
     retstr = "You guess:  \u001b[32;1m" + input + "\u001b[0m - ";
     if (pc_own_board->at(y).at(x) != "\033[1;34m*\033[0m") {//"*") {
       if (pc_own_board->at(y).at(x) == "\033[1;31mX\033[0m"){
-	return "already hit here!";
+	return "Already hit there!";
       }
       if (pc_own_board->at(y).at(x) == "\033[1;37m_\033[0m"){
-	return "already missed here!";
+	return "Already missed there!";
       }else{ 	
 	register_hit(pc_own_board, hu_try_board, hu_pboard, x, y);
 	retstr += "\033[1;31mhit!\033[0m";
@@ -290,7 +291,7 @@ bool battleship::check_nearby_hit(board *board, int len, int x,
   return false;
 }
 
-void battleship::modify_probabilities(board *b,pboard *pb, int x,
+void battleship::update_probabilities(board *b,pboard *pb, int x,
 				      int y, int len, bool d) {
   int modifier, boundcheck;
   if (d == 0) {
@@ -299,42 +300,30 @@ void battleship::modify_probabilities(board *b,pboard *pb, int x,
   else {
     boundcheck = y + len - 1;
   }
-  if (d == 0){ //horizontal
-    if (x + len - 1 <= 9 && check_clear_area(b, len, x, y, 0)){ 
-      if (check_nearby_hit(b, len, x, y, 0)) {
+  if (boundcheck <= 9 && check_clear_area(b, len, x, y, d)){
+      if (check_nearby_hit(b, len, x, y, d)){
 	modifier = 50;
       }
       else {
 	modifier = 1;
       }
       for (int i = 0; i < len; i++){
-	pb->at(y).at(x + i) += modifier;
+	if (d == 0)
+	  pb->at(y).at(x + i) += modifier;
+	else
+	  pb->at(y + i).at(x) += modifier;
       }
     }
-  }
-  if (d == 1){
-    if (y + len - 1 <= 9 && check_clear_area(b, len, x, y, 1)) {
-      if (check_nearby_hit(b, len, x, y, 1)) {
-	modifier = 50;
-      }
-      else {
-	modifier = 1;
-      }
-      for (int i = 0;i < len;i++){
-	pb->at(y + i).at(x) += modifier;
-      }
-    }
-  }
 }
-    
+     
 void battleship::calc_probabilities(board *b, pboard *pb){  
   int len;
   for (int i = 0; i < 10; i++){
     for (int j = 0; j < 10; j++){ //for each space
       for (int z = 0; z < 5; z++){ //for each ship
 	len = ship_len_lookup[z];
-	modify_probabilities(b, pb, j, i, len, 0);
-	modify_probabilities(b, pb, j, i, len, 1);
+	update_probabilities(b, pb, j, i, len, 0);
+	update_probabilities(b, pb, j, i, len, 1);
       }
     }
   }
@@ -428,7 +417,9 @@ void battleship::run_game(){
   string hu_guess, pc_guess;
   while(!gameover()){
     hu_guess = hu_make_guess();
-    if (hu_guess == "already hit here!" || hu_guess == "already missed here!"){
+    if (hu_guess == "already hit here!" ||
+	hu_guess == "already missed here!" ||
+	hu_guess == "Please enter valid coordinates."){
       std::cout << hu_guess << std::endl << "Please guess again." << std::endl;
       continue;
     }
@@ -521,7 +512,6 @@ void battleship::get_start_coord(board *b, int len,
     std::cout << "Enter a starting coordinate (i.e. J5): ";
     
     getline(cin,coord);
-    //    std::cout << "input: " << input << std::endl;
     y = int(coord[0]) - 65;
     if (coord.length() > 2){
       x = ((int)coord[1]-48)*10 + (int)coord[2]-48;
@@ -597,7 +587,7 @@ void battleship::print_board(board *b) const{
     for (int j=0; j<10; j++){
       std::cout << b->at(i).at(j);
     }
-    if (i < hu_guesses.size() && i < pc_guesses.size()){
+    if (i < (int)hu_guesses.size() && i < (int)pc_guesses.size()){
       std::cout << " " << green_char(i) << "         " <<
 	hu_guesses[hu_guesses.size()-i-1] << "           " <<
 	pc_guesses[pc_guesses.size()-i-1] << std::endl;
