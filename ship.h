@@ -11,11 +11,21 @@ using namespace std;
 struct pos{
   int x;
   int y;
-  bool operator==(pos p){
-    return (p.x==x && p.y==y);
+  
+  pos() {
+    this->x = -1;
+    this->y = -1;
   }
-  pos(int a, int b){
-    x=a; y=b;
+  pos(int x, int y){
+    this->x = x;
+    this->y = y;
+  }
+  pos(const pos &p){
+    this->x = p.x;
+    this->y = p.y;
+  }
+  bool operator==(pos p){
+    return (p.x == this->x && p.y == this->y);
   }
 };
 
@@ -23,29 +33,35 @@ class ship{
  
  public:
   ship();
-  ship(string s,string c, int x, int y,int l, bool d);
+  ship(string s, string c, pos p, int l, bool d);
   ~ship() {};
   
   string get_name() const { return name; };
   string get_char() const { return c; }; 
   int get_length() const { return length; };
   bool get_dir() const { return dir; };
-  bool is_sunk() const;    //returns whether or not it's sunk
-  int get_x() const { return start_x; };
-  int get_y() const { return start_y; };
+  bool is_sunk() const;
+  pos get_start_pos() const { return start_pos; };
+  int get_x() const { return start_pos.x; };
+  int get_y() const { return start_pos.y; };
   void print() const;
   void set_hits();
-  bool within_ship(int x, int y) const;
-  void add_hit_to_ship(int x, int y);
+  bool within_ship(pos p) const;
+  void add_hit_to_ship(pos p);
+
  private:
+
+  bool matches_horizontal(pos p) const;
+  bool matches_vertical(pos p) const;
+  bool within_horizontal(pos p) const;
+  bool within_vertical(pos p) const;
   
   string c;  
-  string name; //name
-  int length;  //length of ship
-  bool dir;    //direction of ship (1 is vertical, 0 horizontal)
-  int start_x; //starting horizontal direction
-  int start_y; //starting pos in vertical direction
-  bool sunk;   //true if the ship is sunk
-  vector<int> hits;  //vector of hits (0 not hit, 1 hit)
- 
+  string name;        //name
+  int length;         //length of ship
+  bool dir;           //direction of ship (1 is vertical, 0 horizontal)
+  string direction;
+  pos start_pos;
+  bool sunk;          //true if the ship is sunk
+  vector<bool> hits;  //vector of hits (0 not hit, 1 hit)
 };
