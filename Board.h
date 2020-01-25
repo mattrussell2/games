@@ -8,7 +8,7 @@
 
 using namespace std;
 
-//todo: implement knocks,  endgame, and AI.
+//todo: AI.
 const int PIPS = 15;
 
 class Board{

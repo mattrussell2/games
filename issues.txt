@@ -1,9 +1,0 @@
-two current issues: 
-
-critical: with doubles, situation with no valid moves is sometimes not correctly determined after first move.
-          in this case, input is requested, but not possible. 
-
-when in zone:  able to take a piece off the board when difference is < die amt even if there are
-               pieces above that piece that could be moved -- only occurs when the piece above would stay
-               on the board, rather than come off with that roll.
-

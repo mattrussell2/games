@@ -9,16 +9,15 @@ class Game{
   void run_game();
   void welcome_message();
   bool check_gameover(){ return b->check_gameover(); }
-  bool check_move(bool print, int start, int end);  
+  bool check_move(int start, int end, bool print=false);  
   bool determine_valid_moves(string color);
   bool get_move();
   void make_move();
   void take_turn();  
   void determine_first_turn();
-  bool test_in_zone(string color);
-  bool check_zone_move(bool print, int start, int end);
+  bool test_in_zone();
+  bool check_zone_move(int start, int end, bool print=false);
   bool validate_input();
-  bool taken_turn(int start, int end); //test if this turn was taken.
   bool double_cube();
   int white_score;
   int black_score;
@@ -36,6 +35,7 @@ class Game{
   bool *curr_taken;
 
   string double_turn;
+  void end_game(string winner);
   //  bool black_in_zone, white_in_zone;
 };
 
