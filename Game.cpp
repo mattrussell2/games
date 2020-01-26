@@ -1,9 +1,7 @@
 #include "Game.h"
 #include "Board.h"
 
-//issues: when in zone:  able to take a piece off the board when difference is < dice roll even if there are
-//        pieces above that piece that could be moved (on the board)
-// when have doubles, often valid moves not being correctly determined. sometimes no valid moves. 
+//issues: when in zone:  able to take a piece off the board when difference is < dice roll even if there are pieces above that piece that could be moved (on the board) -- when have doubles, often valid moves not being correctly determined. sometimes no valid moves. 
 
 void Game::run_game()
 {
@@ -20,7 +18,7 @@ void Game::run_game()
       take_turn();
       if (check_gameover()) break;
       if (double_turn == "empty" or double_turn == turn){
-        cout << turn << "\'s turn! press <enter> to roll, or d to offer to double. ";
+        cout << turn << "\'s turn! press <enter> to roll, or d to double. ";
         getline(cin,s,'\n');
         if (s[0] == 'd') double_cube();
       }
@@ -82,69 +80,41 @@ void Game::welcome_message()
 bool Game::test_in_zone(){
   if (b->get_knocked(turn) > 0) return false;
   int curr, end;
-  if (turn == "white") { curr = 7; end = 24; }
-  else                 { curr = 1; end = 18; }
-  while (curr != end) {
+  if (turn == "white") { curr = 7; end = 25; }
+  else                 { curr = 1; end = 19; }
+  while (curr < end) {
     if (b->color_on_space(curr) == turn) return false;
     curr++;
   }
   return true; 
 }
 
-//we know all pieces are in the zone. if we have a move within the board, we have 
-//to take it
 bool Game::check_zone_move(int start, int end, bool print){  
-  int difference;
-  if (turn == "white") difference = start - end;
-  else                 difference = end - start;
+  int difference = abs(start - end);
   
-  if ((turn == "white" and (start > 7 or end > 7 or start < 0 or end < 0)) or
-      (turn == "black" and (start < 19 or end < 19 or start > 25 or end > 25)))
+  if ((turn == "white" and start > 6) or (turn == "black" and start < 19))
     {
       if (print) cout << "coordinates out of bounds. please try again." << endl;
       return false;
     }
-
-  if (((difference > dice[0] and difference > dice[1]) or
-       (curr_taken[0] and difference > dice[1]) or
-       (curr_taken[1] and difference > dice[0]))){
-    if (print) cout << "move is too large. please try again." << endl;
-    return false;
-  }  
-
-  if ((end == 0 or end == 25) and
-      ((!curr_taken[0] and difference == dice[0]) or
-       (!curr_taken[1] and difference == dice[1]))) return true;
-
-  if (end > 0 and end < 25 and difference != dice[0] and difference != dice[1]){
-    if (print) cout << "incorrect move. please try again\n";
-    return false;
-  }
   
-  if (end > 0 and end < 25){
-    if ((!curr_taken[0] and difference == dice[0]) or
-        (!curr_taken[1] and difference == dice[1])){
-      if (turn != b->color_on_space(end) and b->num_pips_on_space(end) > 1){
-        if (print) cout << "cannot go here." << endl;
-        return false;
-      }
-    }
-  }
-  
-  //ending on the bar
-  //if die roll is greater than the difference, make sure there aren't any higher possibilities.
   if (end == 0 or end == 25){
+
+    //move off the board is exact dice roll.
+    if ((!curr_taken[0] and difference == dice[0]) or
+	(!curr_taken[1] and difference == dice[1])) return true;
+    
     int curr; 
     if (end == 0) curr = 6;
     else          curr = 19;
     while(curr != start){
       if (b->num_pips_on_space(curr) > 0 and b->color_on_space(curr) == turn){
         if (((turn == "white") and
-             (check_zone_move(curr, curr - dice[0]) or
-              check_zone_move(curr, curr - dice[1]))) or
+             (check_move(curr, curr - dice[0]) or
+              check_move(curr, curr - dice[1]))) or
             ((turn == "black") and
-             (check_zone_move(curr, curr + dice[0]) or
-              check_zone_move(curr, curr + dice[1])))){
+             (check_move(curr, curr + dice[0]) or
+              check_move(curr, curr + dice[1])))){
           if (print) cout << "a higher piece can be moved first" << endl;
           return false; 
         }
@@ -152,13 +122,12 @@ bool Game::check_zone_move(int start, int end, bool print){
       if (turn == "white") curr--;
       else                 curr++;
     }
-
   }
   return true; 	   
 }
   
 bool Game::check_move(int start, int end, bool print){
-  if (start < 0 or start > 25) {
+  if (start < 0 or start > 25 or end < 0 or end > 25) {
     if (print) cout << "coordinate out of bounds. please try again." << endl;
     return false;
   }
@@ -168,29 +137,50 @@ bool Game::check_move(int start, int end, bool print){
     return false;
   }
 
-  if ((turn == "white" and b->get_knocked("white") == 0 and start == 0) or
-      (turn == "black" and b->get_knocked("black") == 0 and start == 25)){
-    if (print) cout << "cannot start on bar unless there are knocked pips\n";
+  if (b->get_knocked(turn) == 0 and (start == 0 or start == 25)) {
+    if (print) cout << "cannot start there\n";
     return false;
   }
 
-  if ((turn == "black" and b->get_knocked("black") > 0 and start != 0) or
-      (turn == "white" and b->get_knocked("white") > 0 and start != 25)) {
+  if (b->get_knocked(turn) > 0 and (start != 0 and start != 25)) {
     if (print) cout << "remove your piece(s) from the bar before continuing.\n";
     return false;
   }
   
-  if (((start > end) and (turn == "black")) or
-      ((start < end) and (turn == "white"))) {
+  if ((start > end and turn == "black") or (start < end and turn == "white")) {
     if (print) cout << "wrong direction. please try again." << endl;
     return false;
   }
+ 
+  if (start > 0 and start < 25 and b->color_on_space(start) != turn){
+    if (print) cout << "wrong starting color. please try again.\n";
+    return false;
+  }            
+              
+  if (end > 0 and end < 25 and b->num_pips_on_space(end) > 1 and
+      b->color_on_space(end) != turn){
+      if (print) cout << "cannot move pip there. please try again.\n";
+      return false; 
+  }
 
+  int difference = abs(start - end);  
+  if (end > 0 and end < 25 and difference != dice[0] and difference != dice[1]){
+    if (print) cout << "incorrect move. please try again\n";
+    return false;
+  }  
+
+  if (((difference > dice[0] and difference > dice[1]) or
+       (curr_taken[0] and difference > dice[1]) or
+       (curr_taken[1] and difference > dice[0]))){
+    if (print) cout << "move is too large. please try again." << endl;
+    return false;
+  }
+  
   if (dice[0] != dice[1] and
-      ((abs(start - end) == dice[0] and curr_taken[0]) or
-       (abs(start - end) == dice[1] and curr_taken[1]))){
-    if (print)
-      cout << "already moved that die. please try again.\n";
+      ((difference == dice[0] and curr_taken[0]) or
+       (difference == dice[1] and curr_taken[1])) and
+      (!test_in_zone() and end != 25 and end != 0)){    
+    if (print) cout << "already moved that die. please try again.\n";
     return false;
   }
   
@@ -200,45 +190,25 @@ bool Game::check_move(int start, int end, bool print){
     if (print) cout << "cannot take pieces off board yet!" << endl;
     return false;
   }
-  int difference; 
-  if (turn == "black") difference = end - start;
-  else                 difference = start - end;
-  if (difference != dice[0] and difference != dice[1]) {    
+  
+  if (abs(start - end) != dice[0] and abs(start - end) != dice[1]) {    
     if (print) cout << "incorrect move. please try again\n" << endl;
     return false;
   }
     
-  if (start > 0 and start < 25 and b->color_on_space(start) != turn){
-    if (print)
-      cout << "wrong starting color at that location. please try again.\n";
-    return false;
-  }            
-        
-  if (start > 0 and start < 25 and b->test_space_empty(start)) {
-    if (print)
-      cout << "board is empty at that starting position. please try again.\n";
-    return false;
-  }
-   
-  if (end > 0 and end < 25 and b->num_pips_on_space(end) > 1 and
-      b->color_on_space(end) != turn){
-      if (print)
-        cout << "cannot move pip there. please try again.\n";
-      return false; 
-  }
-  
   return true;
 }
 
-bool Game::determine_valid_moves(string color)
+bool Game::determine_valid_moves(bool debug)
 {
   for (int i = 0; i < 26; i++){
-    if ((color == "white" and (check_move(i, i - dice[0]) or
-                               check_move(i, i - dice[1]))) or
-        (color == "black" and (check_move(i, i + dice[0]) or
-                               check_move(i, i + dice[1]))))
+    if ((turn == "white" and (check_move(i, i - dice[0], debug) or
+			      check_move(i, i - dice[1], debug))) or
+        (turn == "black" and (check_move(i, i + dice[0], debug) or
+			      check_move(i, i + dice[1], debug))))
       return true;
   }
+  if (debug) cout << "NO VALID MOVES" << endl;
   return false;
 }
 
@@ -261,7 +231,7 @@ void Game::make_move()
   else                                    b->add_one_off_board(turn); 
 }
 
-bool Game::validate_input(){ 
+bool Game::validate_input(){  
   std::string::const_iterator it = strin1.begin();
   while (it != strin1.end() and std::isdigit(*it)) ++it;
   if (!(!strin1.empty() and it == strin1.end())) return false;
@@ -299,6 +269,10 @@ bool Game::double_cube(){
 
 bool Game::get_move(){
   cin >> strin1 >> strin2; getchar();
+  if (strin1 == "debug"){
+    determine_valid_moves();
+    return true;
+  }
   while(!validate_input()){
     cout << "not valid numerical input. please try again." << endl;
     cin >> strin1 >> strin2; getchar();
@@ -323,7 +297,7 @@ void Game::take_turn(){
     stopval = 4;
   }
   
-  if (!determine_valid_moves(turn)){
+  if (!determine_valid_moves()){
     cout << "player has no valid moves." << endl;
     stopval = 0;
   }
@@ -335,7 +309,7 @@ void Game::take_turn(){
       curr_taken[0] = false;
       curr_taken[1] = false;
     }
-    if (!determine_valid_moves(turn)){      
+    if (!determine_valid_moves()){      
       cout << "player has no valid moves." << endl;
       break;
     }
@@ -346,10 +320,14 @@ void Game::take_turn(){
     }
     if (!endtest) return;
     make_move();
-    if (((first_pos < second_pos) and (second_pos - first_pos) == dice[0]) or
-        ((first_pos > second_pos) and (first_pos - second_pos) == dice[0])) {
-      curr_taken[0] = true;
-    } else curr_taken[1] = true;
+
+    int difference = abs(second_pos - first_pos);
+    if (difference == dice[0])      curr_taken[0] = true;
+    else if (difference == dice[1]) curr_taken[1] = true;    
+    else { //now in zone. assume move legit, so it's gotta be the higher one.
+      if (dice[0] > dice[1]) curr_taken[0] = true;
+      else                   curr_taken[1] = true;
+    }
 
     b->print_board();
     if (i < stopval - 1)

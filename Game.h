@@ -10,7 +10,7 @@ class Game{
   void welcome_message();
   bool check_gameover(){ return b->check_gameover(); }
   bool check_move(int start, int end, bool print=false);  
-  bool determine_valid_moves(string color);
+  bool determine_valid_moves(bool debug=false);
   bool get_move();
   void make_move();
   void take_turn();  
