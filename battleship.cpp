@@ -206,15 +206,14 @@ bool battleship::hu_make_guess(pos& p) {
 void battleship::hu_process_guess(const pos& p) {
     std::string guess;
     if (pc_own_board[p.y][p.x] == B_EMPTY_OCEAN) {
+        std::cout << I_MISSED_SHOT << "\n";
         register_miss(pc_own_board, hu_try_board, hu_pboard, p);
         guess = "\u001b[37;1m" + p.to_string() + "\u001b[0m";
-        std::cout << I_MISSED_SHOT << "\n";
     } else {
+        std::cout << I_HIT_SHOT << "\n";
         register_hit(pc_own_board, hu_try_board, hu_pboard, p);
-        std::cout << "adding hit" << std::endl;
         add_hit_to_ships(hu_try_board, pc_ships, hu_pboard, p, 1, false);
         guess = "\u001b[31;1m" + p.to_string() + "\u001b[0m";
-        std::cout << I_HIT_SHOT << "\n";
     }
     hu_guesses.push_back(guess);
 }
