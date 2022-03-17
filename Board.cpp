@@ -27,17 +27,9 @@ Board::Board() {
         board[12][i] = "white";
         board[18][i] = "\033[0;42;30mblack\033[1;42;37m";
     }
-    dice        = new int[2];
     double_cube = 1;
     srand(time(NULL));
 };
-
-int* Board::roll_dice() {
-    dice[0] = rand() % 6 + 1;
-    dice[1] = rand() % 6 + 1;
-    return dice;
-}
-
 
 bool Board::test_space_empty(int space) const {
     if (board[space - 1][0] == "empty") return true;

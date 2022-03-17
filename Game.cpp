@@ -12,13 +12,13 @@ void Game::run_game() {
     b.print_board();
     determine_first_turn();
     double_declined = false;
-    double_turn     = "empty";
+    double_turn     = "any";
     first_move      = true;
     string s;
-    while (!check_gameover()) {
+    while (!gameover()) {
         take_turn();
-        if (check_gameover()) break;
-        if (double_turn == "empty" or double_turn == turn) {
+        if (gameover()) break;
+        if (double_turn == "any" or double_turn == turn) {
             cout << turn << "\'s turn! press <enter> to roll, or d to double. ";
             getline(cin, s, '\n');
             if (s[0] == 'd') double_cube();
@@ -64,20 +64,8 @@ void Game::end_game(string winner) {
     } else {
         score_to_add = b.double_amount();
     }
-    if (winner == "white")
-        white_score += score_to_add;
-    else
-        black_score += score_to_add;
-}
-
-void Game::welcome_message() {
-    cout << "welcome to backgammon!" << endl;
-    cout << "moves are made one by one. " << endl;
-    cout << "format: firstpos <space> secondpos <enter>. " << endl;
-    cout << "use the 0 and 25 positions for the bar/off board." << endl;
-    cout << "to double, enter d instead of <enter> to roll dice" << endl;
-    cout << "press <enter> to auto-roll for first move." << endl;
-    cin.get();
+    winner == "white" ? white_score += score_to_add
+                      : black_score += score_to_add;
 }
 
 bool Game::test_in_zone() {
@@ -109,8 +97,8 @@ bool Game::check_zone_move(int start, int end, bool print) {
     if (end == 0 or end == 25) {
 
         // move off the board is exact dice roll.
-        if ((!curr_taken[0] and difference == dice[0]) or
-            (!curr_taken[1] and difference == dice[1]))
+        if ((!move_taken.first and difference == dice.first) or
+            (!move_taken.second and difference == dice.second))
             return true;
 
         int curr;
@@ -122,20 +110,17 @@ bool Game::check_zone_move(int start, int end, bool print) {
             if (b.num_pips_on_space(curr) > 0 and
                 b.color_on_space(curr) == turn) {
                 if (((turn == "white") and
-                     (check_move(curr, curr - dice[0]) or
-                      check_move(curr, curr - dice[1]))) or
+                     (check_move(curr, curr - dice.first) or
+                      check_move(curr, curr - dice.second))) or
                     ((turn == "black") and
-                     (check_move(curr, curr + dice[0]) or
-                      check_move(curr, curr + dice[1])))) {
+                     (check_move(curr, curr + dice.first) or
+                      check_move(curr, curr + dice.second)))) {
                     if (print)
                         cout << "a higher piece can be moved first" << endl;
                     return false;
                 }
             }
-            if (turn == "white")
-                curr--;
-            else
-                curr++;
+            turn == "white" ? curr-- : curr++;
         }
     }
     return true;
@@ -182,22 +167,22 @@ bool Game::check_move(int start, int end, bool print) {
     }
 
     int difference = abs(start - end);
-    if (end > 0 and end < 25 and difference != dice[0] and
-        difference != dice[1]) {
+    if (end > 0 and end < 25 and difference != dice.first and
+        difference != dice.second) {
         if (print) cout << "incorrect move. please try again\n";
         return false;
     }
 
-    if (((difference > dice[0] and difference > dice[1]) or
-         (curr_taken[0] and difference > dice[1]) or
-         (curr_taken[1] and difference > dice[0]))) {
+    if (((difference > dice.first and difference > dice.second) or
+         (move_taken.first and difference > dice.second) or
+         (move_taken.second and difference > dice.first))) {
         if (print) cout << "move is too large. please try again." << endl;
         return false;
     }
 
-    if (dice[0] != dice[1] and
-        ((difference == dice[0] and curr_taken[0]) or
-         (difference == dice[1] and curr_taken[1])) and
+    if (dice.first != dice.second and
+        ((difference == dice.first and move_taken.first) or
+         (difference == dice.second and move_taken.second)) and
         (!test_in_zone() and end != 25 and end != 0)) {
         if (print) cout << "already moved that die. please try again.\n";
         return false;
@@ -210,7 +195,7 @@ bool Game::check_move(int start, int end, bool print) {
         return false;
     }
 
-    if (abs(start - end) != dice[0] and abs(start - end) != dice[1]) {
+    if (abs(start - end) != dice.first and abs(start - end) != dice.second) {
         if (print) cout << "incorrect move. please try again\n" << endl;
         return false;
     }
@@ -220,10 +205,10 @@ bool Game::check_move(int start, int end, bool print) {
 
 bool Game::determine_valid_moves(bool debug) {
     for (int i = 0; i < 26; i++) {
-        if ((turn == "white" and (check_move(i, i - dice[0], debug) or
-                                  check_move(i, i - dice[1], debug))) or
-            (turn == "black" and (check_move(i, i + dice[0], debug) or
-                                  check_move(i, i + dice[1], debug))))
+        if ((turn == "white" and (check_move(i, i - dice.first, debug) or
+                                  check_move(i, i - dice.second, debug))) or
+            (turn == "black" and (check_move(i, i + dice.first, debug) or
+                                  check_move(i, i + dice.second, debug))))
             return true;
     }
     if (debug) cout << "NO VALID MOVES" << endl;
@@ -239,10 +224,7 @@ void Game::make_move(int first_pos, int second_pos) {
         if (b.hitable(second_pos) and turn != b.color_on_space(second_pos)) {
             b.remove_one_from_space(second_pos);
             cout << "knocked!" << endl;
-            if (turn == "white")
-                b.add_knocked("black");
-            else
-                b.add_knocked("white");
+            b.add_knocked(othercolor(turn));
         }
     }
     if (first_pos != 25 and first_pos != 0) b.remove_one_from_space(first_pos);
@@ -261,10 +243,7 @@ bool Game::validate_input(const std::string& strin) const {
 
 bool Game::double_cube() {
     string opponent, accept;
-    if (turn == "white")
-        opponent = "black";
-    else
-        opponent = "white";
+    opponent = othercolor(turn);
     cout << turn << " has offered a double. " << opponent
          << ", do you accept? (y/n) " << endl;
     getline(cin, accept);
@@ -274,31 +253,21 @@ bool Game::double_cube() {
     }
     if (accept == "y") {
         b.set_double(b.double_amount() * 2);
-        if (turn == "white")
-            double_turn = "black";
-        else
-            double_turn = "white";
+        double_turn = othercolor(turn);
         cout << "double accepted." << endl;
         cout << turn << " to move" << endl;
         return true;
     } else {
-        if (turn == "white")
-            b.decline_double("black");
-        else
-            b.decline_double("white");
+        b.decline_double(othercolor(turn));
         double_declined = true;
         return false;
     }
 }
 
-bool Game::get_move(int& first_pos, int& second_pos) {
+void Game::get_move(int& first_pos, int& second_pos) {
     std::string strin1, strin2;
     cin >> strin1 >> strin2;
     getchar();
-    if (strin1 == "debug") {
-        determine_valid_moves();
-        return true;
-    }
     while (!validate_input(strin1) or !validate_input(strin2)) {
         cout << "not valid numerical input. please try again." << endl;
         cin >> strin1 >> strin2;
@@ -306,22 +275,21 @@ bool Game::get_move(int& first_pos, int& second_pos) {
     }
     first_pos  = stoi(strin1);
     second_pos = stoi(strin2);
-    return true;
 }
 
 void Game::take_turn() {
     if (!first_move) {
-        dice = b.roll_dice();
-        cout << "roll is: " << dice[0] << " " << dice[1] << endl;
+        roll_dice();
+        cout << "roll is: " << dice.first << " " << dice.second << endl;
     } else
         first_move = false;
 
-    curr_taken[0] = false;
-    curr_taken[1] = false;
+    move_taken.first  = false;
+    move_taken.second = false;
 
     int stopval = 2;
-    if (dice[0] == dice[1]) {
-        cout << "DOUBLE! player has 4 moves" << endl;
+    if (dice.first == dice.second) {
+        cout << "DOUBLES! player has 4 moves" << endl;
         stopval = 4;
     }
 
@@ -330,62 +298,57 @@ void Game::take_turn() {
         stopval = 0;
     }
 
-    bool endtest;
     for (int i = 0; i < stopval; i++) {
-        if (check_gameover()) return;
+        if (gameover()) return;
         if (stopval == 4 and i == 2) {
-            curr_taken[0] = false;
-            curr_taken[1] = false;
+            move_taken.first  = false;
+            move_taken.second = false;
         }
         if (!determine_valid_moves()) {
             cout << "player has no valid moves." << endl;
             break;
         }
         int first_pos, second_pos;
-        endtest = get_move(first_pos, second_pos);
-        if (!endtest) return;
+        get_move(first_pos, second_pos);
         while (!check_move(first_pos, second_pos, true)) {
-            endtest = get_move(first_pos, second_pos);
+            get_move(first_pos, second_pos);
         }
-        if (!endtest) return;
         make_move(first_pos, second_pos);
 
         int difference = abs(second_pos - first_pos);
-        if (difference == dice[0])
-            curr_taken[0] = true;
-        else if (difference == dice[1])
-            curr_taken[1] = true;
+        if (difference == dice.first)
+            move_taken.first = true;
+        else if (difference == dice.second)
+            move_taken.second = true;
         else { // now in zone. assume move legit, so it's gotta be the higher
                // one.
-            if (dice[0] > dice[1])
-                curr_taken[0] = true;
+            if (dice.first > dice.second)
+                move_taken.first = true;
             else
-                curr_taken[1] = true;
+                move_taken.second = true;
         }
 
         b.print_board();
         if (i < stopval - 1)
-            cout << "move made. [dice read: " << dice[0] << " " << dice[1]
-                 << "]\n";
+            cout << "move made. [dice read: " << dice.first << " "
+                 << dice.second << "]\n";
     }
-    if (turn == "white")
-        turn = "black";
-    else
-        turn = "white";
+    turn = othercolor(turn);
 }
 
 void Game::determine_first_turn() {
-    dice = b.roll_dice();
-    while (dice[0] == dice[1]) {
-        cout << "white rolls: " << dice[0] << endl;
-        cout << "black rolls: " << dice[1] << endl;
+    roll_dice();
+
+    while (dice.first == dice.second) {
+        cout << "white rolls " << dice.first << endl;
+        cout << "black rolls " << dice.second << endl;
         cout << "It's a tie! Press <enter> to reroll" << endl;
         cin.get();
-        dice = b.roll_dice();
+        roll_dice();
     }
-    cout << "white rolls " << dice[0] << endl;
-    cout << "black rolls " << dice[1] << endl;
-    if (dice[0] > dice[1]) {
+    cout << "white rolls " << dice.first << endl;
+    cout << "black rolls " << dice.second << endl;
+    if (dice.first > dice.second) {
         cout << "white goes first!" << endl;
         turn = "white";
     } else {
@@ -393,23 +356,33 @@ void Game::determine_first_turn() {
         turn = "black";
     }
 
-    cout << "[dice read: " << dice[0] << " " << dice[1] << "]" << endl;
+    cout << "[dice read: " << dice.first << " " << dice.second << "]" << endl;
 };
 
+std::pair<int, int> Game::roll_dice() {
+    dice.first  = rand() % 6 + 1;
+    dice.second = rand() % 6 + 1;
+    return dice;
+}
 
 int main() {
-    Game* g = new Game();
-    g->welcome_message();
+    Game g;
+
+    cout << "welcome to backgammon!" << endl;
+    cout << "moves are made one by one. " << endl;
+    cout << "format: firstpos <space> secondpos <enter>. " << endl;
+    cout << "use the 0 and 25 positions for the bar/off board." << endl;
+    cout << "to double, enter d instead of <enter> to roll dice" << endl;
+    cout << "press <enter> to auto-roll for first move." << endl;
+    cin.get();
 
     string yn;
     while (true) {
         cout << endl;
         cout << endl;
         cout << "new game!" << endl;
-        g->run_game();
-        cout << "the score is --- "
-             << "white: " << g->white_score << " black: " << g->black_score
-             << endl;
+        g.run_game();
+        std::cout << g.report_score() << std::endl;
         cout << "would you like to keep playing? (y/n)" << endl;
         getline(cin, yn);
         while (yn[0] != 'y' and yn[0] != 'n') {
@@ -418,12 +391,7 @@ int main() {
         }
         if (yn[0] == 'n') break;
     }
-    if (g->white_score > g->black_score)
-        cout << "white wins!" << endl;
-    else if (g->black_score > g->white_score)
-        cout << "black wins!" << endl;
-    else
-        cout << "it's a tie!!!" << endl;
+    std::cout << g.report_winner() << std::endl;
     cout << "\nThanks for playing :)" << endl;
     return 0;
 }

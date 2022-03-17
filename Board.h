@@ -17,7 +17,6 @@ class Board {
 public:
     Board();
     void        reset();
-    int*        roll_dice();
     void        print_board() const;
     bool        test_space_empty(int space) const;
     std::string color_on_space(int space) const;
@@ -30,7 +29,7 @@ public:
     void        remove_knocked(std::string color);
     int         get_knocked(std::string color) const;
     void        add_one_off_board(std::string color);
-    bool        check_gameover() const { return white_win() or black_win(); };
+    bool        gameover() const { return white_win() or black_win(); };
     bool white_win() const { return (players.at("white").num_off == PIPS); };
     bool black_win() const { return (players.at("black").num_off == PIPS); };
     void set_score(int w, int b) {
@@ -53,7 +52,7 @@ public:
 
 private:
     std::array<std::array<std::string, 15>, 24> board;
-    int*                                        dice;
+    std::pair<int, int>                         dice;
     int                                         double_cube;
     std::unordered_map<std::string, Player>     players;
 
