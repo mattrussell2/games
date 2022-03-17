@@ -1,56 +1,64 @@
-#include<iostream>
-#include<string>
-#include<random>
 #ifndef BOARD_H
 #define BOARD_H
-#include<time.h>
-#include<sstream>
 
-using namespace std;
+#include "Player.h"
+#include <iostream>
+#include <random>
+#include <sstream>
+#include <string>
+#include <time.h>
+#include <unordered_map>
 
-//todo: AI.
+// todo: AI.
 const int PIPS = 15;
 
-class Board{
+class Board {
 
- public:
-  Board();
-  ~Board();
-  void reset();
-  int* roll_dice();
-  void print_board();
-  bool test_space_empty(int space);
-  string color_on_space(int space);
-  int num_pips_on_space(int space);
-  void remove_one_from_space(int space);
-  void add_one_to_space(int space,string color);
-  bool hitable(int space);
-  void print_space(int space);
-  void add_knocked(string color);
-  void remove_knocked(string color);
-  int get_knocked(string color);
-  void add_one_off_board(string color);
-  bool check_gameover() { return (off_black == PIPS || off_white == PIPS); };//(off_black == 15 || off_white == 15); };
-  bool white_win() { return   (off_white == PIPS); };//(off_white == 15); };
-  void set_score(int w, int b){ white_score = w; black_score = b;} 
-  int any_black_in_white_home();
-  int any_white_in_black_home();
-  int num_off(string color) { if (color == "white") return off_white; else return off_black; };
-  int num_knocked(string color) { if (color == "white") return knocked_white; else return knocked_black; };
+public:
+    Board();
+    void        reset();
+    int*        roll_dice();
+    void        print_board() const;
+    bool        test_space_empty(int space) const;
+    std::string color_on_space(int space) const;
+    int         num_pips_on_space(int space) const;
+    void        remove_one_from_space(int space);
+    void        add_one_to_space(int space, std::string color);
+    bool        hitable(int space) const;
+    void        print_space(int space) const;
+    void        add_knocked(std::string color);
+    void        remove_knocked(std::string color);
+    int         get_knocked(std::string color) const;
+    void        add_one_off_board(std::string color);
+    bool        check_gameover() const { return white_win() or black_win(); };
+    bool white_win() const { return (players.at("white").num_off == PIPS); };
+    bool black_win() const { return (players.at("black").num_off == PIPS); };
+    void set_score(int w, int b) {
+        players["white"].score = w;
+        players["black"].score = b;
+    }
+    int any_black_in_white_home() const;
+    int any_white_in_black_home() const;
+    int num_off(std::string color) const { return players.at(color).num_off; };
+    int num_knocked(std::string color) const {
+        return players.at(color).num_knocked;
+    };
 
-  int double_amount(){ return double_cube; }
-  void set_double(int d) { double_cube = d; };
-  void decline_double(string color) {if (color=="white") off_black = PIPS; else off_white = PIPS; };
-  
- private:
-  string **board;
-  int *dice;
-  int double_cube;
-  int knocked_black;
-  int knocked_white;
-  int off_black;
-  int off_white;
-  int white_score;
-  int black_score;
+    int  double_amount() const { return double_cube; }
+    void set_double(int d) { double_cube = d; };
+
+    void decline_double(std::string color) {
+        players[othercolor(color)].num_off = PIPS;
+    };
+
+private:
+    std::array<std::array<std::string, 15>, 24> board;
+    int*                                        dice;
+    int                                         double_cube;
+    std::unordered_map<std::string, Player>     players;
+
+    std::string othercolor(std::string color) {
+        return color == "white" ? "black" : "white";
+    }
 };
 #endif
