@@ -2,12 +2,6 @@
 #include "Board.h"
 
 using namespace std;
-// **no valid moves when (doubles) in zone with all moves less than the roll!!!!**
-
-//-- when have doubles, often valid moves not being correctly
-// determined.  
-
-//sometimes no valid moves.
 
 void Game::run_game() {
     b.set_score(white_score, black_score);
