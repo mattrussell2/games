@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "Board.h"
+/* todo: clean things up! */
 
 using namespace std;
 
