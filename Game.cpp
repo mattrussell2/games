@@ -2,10 +2,12 @@
 #include "Board.h"
 
 using namespace std;
-// issues: when in zone:  able to take a piece off the board when difference is
-// < dice roll even if there are pieces above that piece that could be moved (on
-// the board) -- when have doubles, often valid moves not being correctly
-// determined. sometimes no valid moves.
+// **no valid moves when (doubles) in zone with all moves less than the roll!!!!**
+
+//-- when have doubles, often valid moves not being correctly
+// determined.  
+
+//sometimes no valid moves.
 
 void Game::run_game() {
     b.set_score(white_score, black_score);
@@ -27,10 +29,8 @@ void Game::run_game() {
             getline(cin, s, '\n');
         }
     }
-    if (b.white_win())
-        end_game("white");
-    else
-        end_game("black");
+
+    end_game(b.get_winner());
     b.set_score(white_score, black_score);
     cout << "thanks for playing." << endl;
 }
@@ -86,18 +86,18 @@ bool Game::test_in_zone() {
 }
 
 bool Game::check_zone_move(int start, int end, bool print) {
-    int difference = abs(start - end);
-
     if ((turn == "white" and start > 6) or (turn == "black" and start < 19)) {
         if (print)
             cout << "coordinates out of bounds. please try again." << endl;
         return false;
     }
 
+    int difference = abs(start - end);
+
     if (end == 0 or end == 25) {
 
         // move off the board is exact dice roll.
-        if ((!move_taken.first and difference == dice.first) or
+        if ((!move_taken.first  and difference == dice.first) or
             (!move_taken.second and difference == dice.second))
             return true;
 
@@ -127,7 +127,7 @@ bool Game::check_zone_move(int start, int end, bool print) {
 }
 
 bool Game::check_move(int start, int end, bool print) {
-    if (start < 0 or start > 25 or end < 0 or end > 25) {
+    if (start < 0 or start > 25 or (!test_in_zone() and (end < 0 or end > 25))) {
         if (print)
             cout << "coordinate out of bounds. please try again." << endl;
         return false;
@@ -143,7 +143,8 @@ bool Game::check_move(int start, int end, bool print) {
         return false;
     }
 
-    if (b.get_knocked(turn) > 0 and (start != 0 and start != 25)) {
+    if (b.get_knocked(turn) > 0 and ((turn == "black" and start != 0) or 
+                                     (turn == "white" and start != 25))) {
         if (print)
             cout << "remove your piece(s) from the bar before continuing.\n";
         return false;
@@ -161,7 +162,7 @@ bool Game::check_move(int start, int end, bool print) {
     }
 
     if (end > 0 and end < 25 and b.num_pips_on_space(end) > 1 and
-        b.color_on_space(end) != turn) {
+                                 b.color_on_space(end) != turn) {
         if (print) cout << "cannot move pip there. please try again.\n";
         return false;
     }
@@ -264,7 +265,7 @@ bool Game::double_cube() {
     }
 }
 
-void Game::get_move(int& first_pos, int& second_pos) {
+Move Game::get_move() {
     std::string strin1, strin2;
     cin >> strin1 >> strin2;
     getchar();
@@ -273,8 +274,10 @@ void Game::get_move(int& first_pos, int& second_pos) {
         cin >> strin1 >> strin2;
         getchar();
     }
-    first_pos  = stoi(strin1);
-    second_pos = stoi(strin2);
+    Move m;
+    m.first  = stoi(strin1);
+    m.second = stoi(strin2);
+    return m;
 }
 
 void Game::take_turn() {
@@ -308,14 +311,13 @@ void Game::take_turn() {
             cout << "player has no valid moves." << endl;
             break;
         }
-        int first_pos, second_pos;
-        get_move(first_pos, second_pos);
-        while (!check_move(first_pos, second_pos, true)) {
-            get_move(first_pos, second_pos);
+        Move m = get_move();
+        while (!check_move(m.first, m.second, true)) {
+            m = get_move();
         }
-        make_move(first_pos, second_pos);
+        make_move(m.first, m.second);
 
-        int difference = abs(second_pos - first_pos);
+        int difference = abs(m.second - m.first);
         if (difference == dice.first)
             move_taken.first = true;
         else if (difference == dice.second)
@@ -378,8 +380,6 @@ int main() {
 
     string yn;
     while (true) {
-        cout << endl;
-        cout << endl;
         cout << "new game!" << endl;
         g.run_game();
         std::cout << g.report_score() << std::endl;

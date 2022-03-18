@@ -2,7 +2,7 @@
 
 using namespace std;
 
-Board::Board() {
+void Board::reset() {
     players["white"] = Player();
     players["black"] = Player();
 
@@ -29,6 +29,10 @@ Board::Board() {
     }
     double_cube = 1;
     srand(time(NULL));
+}
+
+Board::Board() {
+    reset();
 };
 
 bool Board::test_space_empty(int space) const {
@@ -95,21 +99,24 @@ int Board::get_knocked(string color) const {
 void Board::print_board() const {
     int boardindex;
     cout << endl;
-    cout << "\33[1;42;37m    || ";
+    std::string line_start = "\33[1;42;37m    ||";
+    std::string line_end   = "||    \33[0m\n";
+
+    cout << line_start << " ";
 
     // print numbers at the top
     for (int i = 13; i < 25; i++) {
         cout << " " << i << "   ";
         if (i == 18) cout << "   ";
     }
-    cout << "||    " << endl;
+    cout << line_end;
 
     // print row of == signs
-    cout << "    ||";
+    cout << line_start;
     for (int i = 0; i < 76; i++) {
         cout << "=";
     }
-    cout << "||    " << endl;
+    cout << line_end;
 
     // print the pieces in the board
     for (int row = 0; row < 12; row++) {
@@ -126,7 +133,7 @@ void Board::print_board() const {
             if (players.at("black").score < 10) cout << " ";
             cout << "\033[1;42;37m|| ";
         } else {
-            cout << "    || ";
+            cout << line_start << " ";
         }
         if (row < 5) {
             boardindex = 12;
@@ -193,33 +200,33 @@ void Board::print_board() const {
                  << "\033[0;42;30m b" << players.at("black").num_off
                  << "\033[1;42;37m";
             if (players.at("black").num_off < 10) cout << " ";
-            cout << endl;
+            cout << "\033[0m" << endl;
 
         } else if (row == 6) {
             cout << "||"
                  << "\033[1;42;37m w" << players.at("white").num_off;
             if (players.at("white").num_off < 10) cout << " ";
-            cout << endl;
+            cout << "\033[0m" << endl;
         } else {
-            cout << "||    " << endl;
+            cout << line_end;
         }
     }
 
     // print the row of == at the bottom
-    cout << "    ||";
+    cout << line_start;
     for (int i = 0; i < 76; i++) {
         cout << "=";
     }
-    cout << "||    " << endl;
+    cout << line_end;
 
     // print the numbers at the bottom
-    cout << "    || ";
+    cout << line_start << " ";
     for (int i = 12; i > 0; i--) {
         if (i < 10) cout << " ";
         cout << " " << i << "   ";
         if (i == 7) cout << "   ";
     }
-    cout << "||    \033[0m" << endl;
+    cout << line_end;
     cout << endl;
 };
 

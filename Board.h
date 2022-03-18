@@ -30,6 +30,8 @@ public:
     int         get_knocked(std::string color) const;
     void        add_one_off_board(std::string color);
     bool        gameover() const { return white_win() or black_win(); };
+
+    std::string get_winner() const { return white_win() ? "white" : "black"; };
     bool white_win() const { return (players.at("white").num_off == PIPS); };
     bool black_win() const { return (players.at("black").num_off == PIPS); };
     void set_score(int w, int b) {

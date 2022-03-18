@@ -3,6 +3,8 @@
 
 #include "Board.h"
 
+typedef std::pair<int, int> Move;
+
 class Game {
 public:
     Game() {
@@ -19,7 +21,8 @@ public:
     bool gameover() { return b.gameover(); }
     bool check_move(int start, int end, bool print = false);
     bool determine_valid_moves(bool debug = false);
-    void get_move(int& first_pos, int& second_pos);
+    Move get_move();
+    
     void make_move(int first_pos, int second_pos);
     void take_turn();
     bool test_in_zone();
@@ -52,8 +55,8 @@ private:
     int white_score;
     int black_score;
 
-    std::pair<int, int>   dice{-1, -1};
-    std::pair<bool, bool> move_taken{false, false};
+    std::pair<int, int> dice{-1, -1};
+    Move                move_taken{false, false};
 
     std::string othercolor(std::string color) {
         return color == "white" ? "black" : "white";
