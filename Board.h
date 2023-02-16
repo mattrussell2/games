@@ -8,6 +8,7 @@
 #include <string>
 #include <time.h>
 #include <unordered_map>
+#include <array>
 
 // todo: AI.
 const int PIPS = 15;
