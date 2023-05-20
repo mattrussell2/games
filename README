@@ -3,4 +3,6 @@ games
 battleship
 backgammon 
 
+both built on arm OSX - run `make` to rebuild. 
+
 enjoy!
