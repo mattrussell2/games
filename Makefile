@@ -1,9 +1,14 @@
-CXX = g++
-FLAGS = -g -std=c++11
+all: 
+	make battleship
+	make backgammon
 
-battleship: main.cpp battleship.cpp ship.cpp
-	${CXX} ${FLAGS} -o battleship main.cpp battleship.cpp ship.cpp
+battleship: 
+	cd battleship && make && mv battleship ../build/
+
+backgammon:
+	cd backgammon && make && mv backgammon ../build/
 
 clean:
-	rm -rf *.o *~ *# battleship.dSYM battleship
-
+	cd backgammon && make clean && cd ../battleship && make clean && cd .. && rm build/*
+	
+.PHONY: battleship backgammon
